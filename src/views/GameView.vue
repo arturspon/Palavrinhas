@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <h1>Palavreando</h1>
 
     <div
@@ -25,7 +25,7 @@
       class="alert"
       :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-info']"
     >
-      <p><b>Partida finalizado!</b></p>
+      <p><b>Partida finalizada!</b></p>
       <p v-if="isLocalPlayerWinner()">
         😎
         <br />
@@ -48,7 +48,7 @@
       </div>
 
       <div class="row">
-        <div class="col-6">
+        <div class="col-md-6">
           <h2>Você</h2>
           <div class="player__grid">
             <div
@@ -75,7 +75,7 @@
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-md-6">
           <h2>Oponente</h2>
           <div class="player__grid">
             <div

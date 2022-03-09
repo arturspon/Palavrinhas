@@ -23,6 +23,7 @@
 
 <script>
 import { collection, addDoc, Timestamp } from 'firebase/firestore'
+import words from '@/utils/words'
 
 export default {
   name: 'HomeView',
@@ -43,7 +44,7 @@ export default {
       localStorage.setItem('hostId', hostId)
 
       const gameData = {
-        word: 'fotos',
+        word: this.getRandomWord(),
         host: {
           id: hostId,
           guesses: [],
@@ -65,6 +66,13 @@ export default {
           gameId: docRef.id,
         }
       })
+    },
+
+    getRandomWord() {
+      const min = 0
+      const max = Math.floor(words.length)
+      const wordIndex = Math.floor(Math.random() * (max - min + 1)) + min
+      return words[wordIndex].toLowerCase()
     },
 
     uuidv4() {
