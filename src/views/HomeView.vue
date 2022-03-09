@@ -1,18 +1,77 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1>Palavreando</h1>
+    <div class="mt-3">
+      <button
+        class="btn btn-primary btn-lg"
+        :disabled="isLoading.gameCreation"
+        @click="play()"
+      >
+        <template v-if="isLoading.gameCreation">
+          <span
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          <span class="visually-hidden">Loading...</span>
+        </template>
+        <template v-else>JOGAR</template>
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import { collection, addDoc, Timestamp } from 'firebase/firestore'
 
 export default {
   name: 'HomeView',
-  components: {
-    HelloWorld
-  }
+
+  data() {
+    return {
+      isLoading: {
+        gameCreation: false,
+      },
+    }
+  },
+
+  methods: {
+    async play() {
+      this.isLoading.gameCreation = true
+
+      const hostId = this.uuidv4()
+      localStorage.setItem('hostId', hostId)
+
+      const gameData = {
+        word: 'fotos',
+        host: {
+          id: hostId,
+          guesses: [],
+        },
+        enemy: {
+          id: null,
+          guesses: [],
+        },
+        winner: null,
+        created_at: Timestamp.now()
+      }
+
+      const matchesCollection = collection(this.$db, 'matches')
+      const docRef = await addDoc(matchesCollection, gameData)
+
+      this.$router.push({
+        name: 'game',
+        params: {
+          gameId: docRef.id,
+        }
+      })
+    },
+
+    uuidv4() {
+      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+      );
+    }
+  },
 }
 </script>

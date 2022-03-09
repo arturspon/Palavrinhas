@@ -2,11 +2,51 @@
   <div>
     <h1>Palavreando</h1>
 
-    <div v-if="isLoading.match" class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+    <div
+      v-if="isLoading.match"
+      class="spinner-border"
+      style="width: 3rem; height: 3rem"
+      role="status"
+    >
       <span class="visually-hidden">Carregando...</span>
     </div>
 
+    <div v-else-if="error" class="alert alert-warning">
+      {{ error }}
+      <div class="mt-2">
+        <router-link :to="{ name: 'home' }" class="btn btn-primary">
+          Ir para página inicial
+        </router-link>
+      </div>
+    </div>
+
+    <div
+      v-if="match && match.winner"
+      class="alert"
+      :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-info']"
+    >
+      <p><b>Partida finalizado!</b></p>
+      <p v-if="isLocalPlayerWinner()">
+        😎
+        <br />
+        Parabéns, você ganhou!
+      </p>
+      <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
+
+      <div class="mt-2">
+        <router-link :to="{ name: 'home' }" class="btn btn-primary">
+          Jogar outra partida
+        </router-link>
+      </div>
+    </div>
+
     <div v-else>
+      <div class="mt-2">
+        <a :href="getShareLink()" target="_blank">
+          Compartilhar link via WhatsApp
+        </a>
+      </div>
+
       <div class="row">
         <div class="col-6">
           <h2>Você</h2>
@@ -24,7 +64,8 @@
               >
                 <span
                   v-if="
-                    player.guesses[rowIndex] && player.guesses[rowIndex][colIndex]
+                    player.guesses[rowIndex] &&
+                    player.guesses[rowIndex][colIndex]
                   "
                 >
                   <b>{{ player.guesses[rowIndex][colIndex].toUpperCase() }}</b>
@@ -89,7 +130,6 @@
 </template>
 
 <script>
-// import { collection, getDocs, doc, getDoc } from "firebase/firestore"
 import { doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore'
 
 export default {
@@ -100,11 +140,13 @@ export default {
       },
 
       isHost: true,
+      localPlayerId: null,
 
-      matchId: 'test',
+      matchId: null,
       matchDocRef: null,
       match: null,
       unsubscribeDbListener: null,
+      error: null,
 
       playerKey: null,
       player: {
@@ -133,11 +175,30 @@ export default {
   },
 
   created() {
-    this.playerKey = this.getPlayerKey()
+    this.matchId = this.$route.params.gameId
+    this.getLocalPlayerId()
     this.loadMatch()
   },
 
   methods: {
+    getLocalPlayerId() {
+      let localId = localStorage.getItem('hostId')
+
+      localId = localId && localId.trim() ? localId : this.uuidv4()
+
+      localStorage.setItem('hostId', localId)
+      this.localPlayerId = localId
+    },
+
+    uuidv4() {
+      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+        (
+          c ^
+          (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+        ).toString(16)
+      )
+    },
+
     getPlayerKey() {
       return this.isHost ? 'host' : 'enemy'
     },
@@ -151,14 +212,22 @@ export default {
 
       this.matchDocRef = doc(this.$db, 'matches', this.matchId)
       const match = await getDoc(this.matchDocRef)
-      console.log(match.data())
 
-      if (!match.exists) {
-        // TODO: mostrar erro
-        // return
+      if (!match.exists()) {
+        this.error = 'Esta partida não existe mais 😶'
+        this.isLoading.match = false
+        return
       }
 
       this.match = match.data()
+      this.isHost = this.match.host.id == this.localPlayerId
+      this.playerKey = this.getPlayerKey()
+      this.player.guesses = Object.values(this.match[this.playerKey].guesses)
+
+      this.player.currentRow =
+        this.player.guesses.length == 0 ? 0 : this.player.guesses.length - 1
+      this.confirmGuess()
+
       this.attachDbListener()
 
       this.isLoading.match = false
@@ -170,7 +239,6 @@ export default {
       }
 
       const row = this.getCurrentRow()
-      // this.isRowFull(row) ? this.player.guesses.push([key]) : row.push(key)
       row.push(key)
 
       this.saveToDb()
@@ -191,7 +259,6 @@ export default {
         this.player.guesses.push([])
       }
 
-      // const rowIndex = this.player.guesses.length - 1
       const rowIndex = this.player.currentRow
       const row = this.player.guesses[rowIndex]
 
@@ -203,6 +270,7 @@ export default {
       const lastKeyIndex = row.length - 1
       row.splice(lastKeyIndex, 1)
       this.$forceUpdate()
+      this.saveToDb()
     },
 
     isRowConfirmed(rowIndex) {
@@ -224,6 +292,12 @@ export default {
         return
       }
 
+      const guessWord = this.getCurrentRow().join('')
+      const isGuessCorrect = guessWord == this.match.word
+      if (isGuessCorrect) {
+        return this.finishGame()
+      }
+
       this.player.currentRow++
       this.player.guesses[this.player.currentRow] = []
     },
@@ -243,7 +317,9 @@ export default {
 
       return this.isKeyCorrect(key, colIndex)
         ? 'bg-success'
-        : (this.isKeyInWord(key) ? 'bg-warning' : 'bg-danger')
+        : this.isKeyInWord(key)
+        ? 'bg-warning'
+        : 'bg-danger'
     },
 
     isKeyCorrect(key, keyIndex) {
@@ -254,36 +330,58 @@ export default {
       return this.match.word.indexOf(key) !== -1
     },
 
-    saveToDb() {
-      console.log(this.player.guesses)
-
+    saveToDb(extraData) {
       let index = 0
-      const arrayObject = {}
+      const arrayObjectOfGuesses = {}
 
       // we need this 'cause firebase don't allow nested arrays
-      this.player.guesses.forEach(row => {
-        arrayObject[index] = row
+      this.player.guesses.forEach((row) => {
+        arrayObjectOfGuesses[index] = row
         index++
       })
 
-      updateDoc(this.matchDocRef, {
+      let dataToUpdate = {
         [this.playerKey]: {
-          guesses: arrayObject
+          id: this.localPlayerId,
+          guesses: arrayObjectOfGuesses,
+        },
+      }
+
+      if (extraData) {
+        dataToUpdate = {
+          ...dataToUpdate,
+          ...extraData,
         }
-      })
+      }
+
+      updateDoc(this.matchDocRef, dataToUpdate)
     },
 
     attachDbListener() {
-      this.unsubscribeDbListener = onSnapshot(this.matchDocRef, doc => {
+      this.unsubscribeDbListener = onSnapshot(this.matchDocRef, (doc) => {
         const data = doc.data()
-
-        // const enemyVar = this.getPlayerKey() == 'host'
-        //   ? this.player : this.enemy
-        this.enemy.guesses = Object.values(data[this.getEnemyPlayerKey()].guesses)
-
-        // const source = doc.metadata.hasPendingWrites ? "Local" : "Server";
-        // console.log(source, " data: ", doc.data());
+        this.enemy.guesses = Object.values(
+          data[this.getEnemyPlayerKey()].guesses
+        )
+        this.match.winner = data.winner
       })
+    },
+
+    finishGame() {
+      this.saveToDb({
+        winner: this.localPlayerId,
+      })
+      this.match.winner = this.localPlayerId
+    },
+
+    isLocalPlayerWinner() {
+      return this.match.winner == this.localPlayerId
+    },
+
+    getShareLink() {
+      const text = `Venha me enfrentar no Palavreando: ${window.location.href}`
+      const encodedText = encodeURIComponent(text)
+      return `https://api.whatsapp.com/send?text=${encodedText}`
     },
   },
 }
