@@ -21,15 +21,21 @@
     </div>
 
     <div
-      v-if="match && match.winner"
+      v-else-if="match && match.winner"
       class="alert"
       :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-info']"
     >
-      <p><b>Partida finalizada!</b></p>
+      <p>
+        <b>Partida finalizada!</b>
+        <br />
+        <span>A palavra era: {{ match.word.toUpperCase() }}</span>
+      </p>
       <p v-if="isLocalPlayerWinner()">
         😎
         <br />
         Parabéns, você ganhou!
+        <br />
+        <span>A palavra era: {{ match.word.toUpperCase() }}</span>
       </p>
       <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
 
@@ -60,7 +66,10 @@
                 v-for="(col, colIndex) of player.grid.cols"
                 :key="colIndex"
                 class="letterContainer"
-                :class="getKeyClass(rowIndex, colIndex)"
+                :class="[
+                  getKeyClass(rowIndex, colIndex),
+                  getKeyClassForNonExistentWord(rowIndex),
+                ]"
               >
                 <span
                   v-if="
@@ -131,6 +140,7 @@
 
 <script>
 import { doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore'
+import getWords from '@/utils/words'
 
 export default {
   data() {
@@ -138,6 +148,8 @@ export default {
       isLoading: {
         match: true,
       },
+
+      words: [],
 
       isHost: true,
       localPlayerId: null,
@@ -147,6 +159,8 @@ export default {
       match: null,
       unsubscribeDbListener: null,
       error: null,
+
+      isCurrentGuessValidWord: true,
 
       playerKey: null,
       player: {
@@ -175,6 +189,7 @@ export default {
   },
 
   created() {
+    this.words = getWords()
     this.matchId = this.$route.params.gameId
     this.getLocalPlayerId()
     this.loadMatch()
@@ -269,6 +284,9 @@ export default {
       const row = this.getCurrentRow()
       const lastKeyIndex = row.length - 1
       row.splice(lastKeyIndex, 1)
+
+      this.isCurrentGuessValidWord = true
+
       this.$forceUpdate()
       this.saveToDb()
     },
@@ -287,12 +305,25 @@ export default {
       return this.isRowFull(this.player.guesses[this.player.currentRow])
     },
 
+    isValidWord(word) {
+      return this.words.indexOf(word) !== -1
+    },
+
     confirmGuess() {
       if (!this.isCurrentRowFull()) {
         return
       }
 
       const guessWord = this.getCurrentRow().join('')
+
+      if (!this.isValidWord(guessWord)) {
+        this.isCurrentGuessValidWord = false
+        console.log(this.isCurrentGuessValidWord)
+        return
+      }
+
+      this.isCurrentGuessValidWord = true
+
       const isGuessCorrect = guessWord == this.match.word
       if (isGuessCorrect) {
         return this.finishGame()
@@ -320,6 +351,15 @@ export default {
         : this.isKeyInWord(key)
         ? 'bg-warning'
         : 'bg-danger'
+    },
+
+    getKeyClassForNonExistentWord(rowIndex) {
+      if (
+        this.player.currentRow == rowIndex &&
+        !this.isCurrentGuessValidWord
+      ) {
+        return 'border border-danger'
+      }
     },
 
     isKeyCorrect(key, keyIndex) {

@@ -23,7 +23,7 @@
 
 <script>
 import { collection, addDoc, Timestamp } from 'firebase/firestore'
-import words from '@/utils/words'
+import getWords from '@/utils/words'
 
 export default {
   name: 'HomeView',
@@ -69,10 +69,11 @@ export default {
     },
 
     getRandomWord() {
+      const words = getWords()
       const min = 0
       const max = Math.floor(words.length)
       const wordIndex = Math.floor(Math.random() * (max - min + 1)) + min
-      return words[wordIndex].toLowerCase()
+      return words[wordIndex]
     },
 
     uuidv4() {
