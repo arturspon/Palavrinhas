@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container pb-4">
     <h1>Palavreando</h1>
 
     <div
@@ -53,87 +53,93 @@
         </a>
       </div>
 
-      <div class="row">
-        <div class="col-md-6">
-          <h2>Você</h2>
-          <div class="player__grid">
-            <div
-              v-for="(row, rowIndex) of player.grid.rows"
-              :key="rowIndex"
-              class="letterRow"
-            >
+      <div class="game">
+        <div class="grid">
+          <div class="playerBoard">
+            <h2>Você</h2>
+            <div class="player__grid">
               <div
-                v-for="(col, colIndex) of player.grid.cols"
-                :key="colIndex"
-                class="letterContainer"
-                :class="[
-                  getKeyClass(rowIndex, colIndex),
-                  getKeyClassForNonExistentWord(rowIndex),
-                ]"
+                v-for="(row, rowIndex) of player.grid.rows"
+                :key="rowIndex"
+                class="letterRow"
               >
-                <span
-                  v-if="
-                    player.guesses[rowIndex] &&
-                    player.guesses[rowIndex][colIndex]
-                  "
+                <div
+                  v-for="(col, colIndex) of player.grid.cols"
+                  :key="colIndex"
+                  class="letterContainer"
+                  :class="[
+                    getKeyClass(rowIndex, colIndex),
+                    getKeyClassForNonExistentWord(rowIndex),
+                    getKeyClassForCurrentRow(rowIndex),
+                  ]"
                 >
-                  <b>{{ player.guesses[rowIndex][colIndex].toUpperCase() }}</b>
-                </span>
-                <span v-else>&nbsp;</span>
+                  <span
+                    v-if="
+                      player.guesses[rowIndex] &&
+                      player.guesses[rowIndex][colIndex]
+                    "
+                  >
+                    <b>{{
+                      player.guesses[rowIndex][colIndex].toUpperCase()
+                    }}</b>
+                  </span>
+                  <span v-else>&nbsp;</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="col-md-6">
-          <h2>Oponente</h2>
-          <div class="player__grid">
-            <div
-              v-for="(row, rowIndex) of enemy.grid.rows"
-              :key="rowIndex"
-              class="letterRow"
-            >
+          <div class="enemyBoard">
+            <h2>Oponente</h2>
+            <div class="player__grid">
               <div
-                v-for="(col, colIndex) of enemy.grid.cols"
-                :key="colIndex"
-                class="letterContainer"
-                :class="getKeyClass(rowIndex, colIndex, true)"
+                v-for="(row, rowIndex) of enemy.grid.rows"
+                :key="rowIndex"
+                class="letterRow"
               >
-                &nbsp;
+                <div
+                  v-for="(col, colIndex) of enemy.grid.cols"
+                  :key="colIndex"
+                  class="letterContainer"
+                  :class="getKeyClass(rowIndex, colIndex, true)"
+                >
+                  &nbsp;
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="d-flex justify-content-center gap-2 mb-4">
-        <button class="btn btn-outline-danger" @click="deleteLastKey()">
-          Apagar última letra
-        </button>
-        <button
-          class="btn btn-outline-success"
-          @click="confirmGuess()"
-          :disabled="!isCurrentRowFull()"
-        >
-          Confimar
-        </button>
-      </div>
-
-      <div>
-        <div
-          v-for="(keyRow, index) of keyboard"
-          :key="index"
-          class="d-flex justify-content-center gap-1 mb-1"
-        >
+        <div class="d-flex justify-content-center gap-2 mb-4">
+          <button class="btn btn-outline-danger" @click="deleteLastKey()">
+            Apagar última letra
+          </button>
           <button
-            v-for="keyLetter of keyRow"
-            :key="keyLetter"
-            class="btn btn-outline-secondary keyboard__letter"
-            @click="onKeyPress(keyLetter)"
+            class="btn btn-outline-success"
+            @click="confirmGuess()"
+            :disabled="!isCurrentRowFull()"
           >
-            {{ keyLetter.toUpperCase() }}
+            Confimar
           </button>
         </div>
+
+        <div>
+          <div
+            v-for="(keyRow, index) of keyboard"
+            :key="index"
+            class="d-flex justify-content-center gap-1 mb-1"
+          >
+            <button
+              v-for="keyLetter of keyRow"
+              :key="keyLetter"
+              class="btn btn-outline-secondary btn-sm keyboard__letter"
+              :class="getKeyboardKeyClass(keyLetter)"
+              @click="onKeyPress(keyLetter)"
+            >
+              {{ keyLetter.toUpperCase() }}
+            </button>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -170,6 +176,11 @@ export default {
         },
         currentRow: 0,
         guesses: [],
+        keyStats: {
+          right: [],
+          halfRight: [],
+          wrong: [],
+        },
       },
 
       enemy: {
@@ -185,6 +196,7 @@ export default {
         ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç'],
         ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
       ],
+      keyStatuses: {},
     }
   },
 
@@ -193,6 +205,7 @@ export default {
     this.matchId = this.$route.params.gameId
     this.getLocalPlayerId()
     this.loadMatch()
+    this.attachKeyboardListener()
   },
 
   methods: {
@@ -246,6 +259,26 @@ export default {
       this.attachDbListener()
 
       this.isLoading.match = false
+    },
+
+    attachKeyboardListener() {
+      const validKeys = this.keyboard.reduce(
+        (carry, keyboardRow) => [...carry, ...keyboardRow],
+        []
+      )
+
+      document.addEventListener('keydown', (event) => {
+        const pressedKey = event.key.toLowerCase()
+
+        if (pressedKey == 'backspace') {
+          return this.deleteLastKey()
+        }
+
+        const isValidKey = validKeys.includes(pressedKey)
+        if (isValidKey) {
+          this.onKeyPress(pressedKey)
+        }
+      })
     },
 
     onKeyPress(key) {
@@ -318,7 +351,6 @@ export default {
 
       if (!this.isValidWord(guessWord)) {
         this.isCurrentGuessValidWord = false
-        console.log(this.isCurrentGuessValidWord)
         return
       }
 
@@ -331,6 +363,7 @@ export default {
 
       this.player.currentRow++
       this.player.guesses[this.player.currentRow] = []
+      this.updateKeyStatuses()
     },
 
     getKeyClass(rowIndex, colIndex, isEnemy) {
@@ -347,18 +380,50 @@ export default {
       }
 
       return this.isKeyCorrect(key, colIndex)
-        ? 'bg-success'
+        ? 'bg-success text-white'
         : this.isKeyInWord(key)
         ? 'bg-warning'
-        : 'bg-danger'
+        : 'bg-danger text-white'
     },
 
     getKeyClassForNonExistentWord(rowIndex) {
-      if (
-        this.player.currentRow == rowIndex &&
-        !this.isCurrentGuessValidWord
-      ) {
-        return 'border border-danger'
+      if (this.player.currentRow == rowIndex && !this.isCurrentGuessValidWord) {
+        return 'letterContainer--invalidWord'
+      }
+    },
+
+    getKeyClassForCurrentRow(rowIndex) {
+      const isCurrentRow = rowIndex == this.player.currentRow
+      return isCurrentRow && 'letterContainer--currentRow'
+    },
+
+    getKeyboardKeyClass(key) {
+      return this.keyStatuses[key] == 'right'
+        ? 'bg-success text-white'
+        : this.keyStatuses[key] == 'halfRight'
+        ? 'bg-warning'
+        : this.keyStatuses[key] == 'wrong'
+        ? 'bg-danger text-white'
+        : ''
+    },
+
+    updateKeyStatuses() {
+      for (const [rowIndex, row] of this.player.guesses.entries()) {
+        if (
+          row.length == 0 ||
+          row.length < this.player.grid.cols ||
+          this.player.currentRow == rowIndex
+        ) {
+          continue
+        }
+
+        for (const [colIndex, key] of row.entries()) {
+          this.keyStatuses[key] = this.isKeyCorrect(key, colIndex)
+            ? 'right'
+            : this.isKeyInWord(key)
+            ? 'halfRight'
+            : 'wrong'
+        }
       }
     },
 
@@ -428,23 +493,75 @@ export default {
 </script>
 
 <style scoped>
+.game {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  flex: 1;
+}
+
+.grid {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-evenly;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
 .letterRow {
   display: flex;
   justify-content: center;
-  gap: 1em;
-  margin-bottom: 1em;
+  gap: 0.75em;
+  margin-bottom: 0.8rem;
 }
 
 .letterContainer {
-  padding: 1em 1.5em;
+  padding: 1em 1.4rem;
   border: 1px solid black;
   border-radius: 8px;
 }
 
+.letterContainer--currentRow {
+  border: 2px solid black;
+}
+
+.letterContainer--invalidWord {
+  border: 2px solid #ff0000;
+}
+
 .keyboard__letter {
-  padding: 1em;
+  padding: 1rem;
   border: 1px solid black;
   border-radius: 8px;
   cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .grid {
+    flex-flow: column-reverse;
+  }
+
+  .letterRow {
+    gap: 0.5rem;
+  }
+
+  .letterContainer {
+    padding: 0.5rem 1rem;
+  }
+
+  .keyboard__letter {
+    padding: 0.5rem;
+  }
+
+  .playerBoard {
+    flex: 1;
+  }
+
+  .enemyBoard > .player__grid > .letterRow {
+    margin-bottom: 0.1rem;
+  }
+  .enemyBoard > .player__grid > .letterRow > .letterContainer {
+    padding: 0.1rem 0.7em;
+  }
 }
 </style>

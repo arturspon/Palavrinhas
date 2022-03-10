@@ -573,6 +573,7 @@ const words = [
   'facto',
   'culpa',
   'vinha',
+  'vinho',
   'porta',
   'menos',
   'urgia',
