@@ -1,144 +1,146 @@
 <template>
-  <div class="container pb-4">
-    <h1>Palavrinhas</h1>
+  <div class="gameViewRoot d-flex align-items-center justify-content-center">
+    <div class="container">
+      <h1>Palavrinhas</h1>
 
-    <div
-      v-if="isLoading.match"
-      class="spinner-border"
-      style="width: 3rem; height: 3rem"
-      role="status"
-    >
-      <span class="visually-hidden">Carregando...</span>
-    </div>
-
-    <div v-else-if="error" class="alert alert-warning">
-      {{ error }}
-      <div class="mt-2">
-        <router-link :to="{ name: 'home' }" class="btn btn-primary">
-          Ir para página inicial
-        </router-link>
-      </div>
-    </div>
-
-    <div
-      v-else-if="match && match.winner"
-      class="alert"
-      :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-info']"
-    >
-      <p>
-        <b>Partida finalizada!</b>
-        <br />
-        <span>A palavra era: {{ match.word.toUpperCase() }}</span>
-      </p>
-      <p v-if="isLocalPlayerWinner()">
-        😎
-        <br />
-        Parabéns, você ganhou!
-      </p>
-      <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
-
-      <div class="mt-2">
-        <router-link :to="{ name: 'home' }" class="btn btn-primary">
-          Jogar outra partida
-        </router-link>
-      </div>
-    </div>
-
-    <div v-else>
-      <div v-if="isWaitingEnemyJoin()" class="mt-4 alert alert-secondary p-5">
-        <p>Aguardando seu oponente entrar...</p>
-        <a :href="getShareLink()" target="_blank" class="btn btn-success">
-          Compartilhar link via WhatsApp
-        </a>
+      <div
+        v-if="isLoading.match"
+        class="spinner-border"
+        style="width: 3rem; height: 3rem"
+        role="status"
+      >
+        <span class="visually-hidden">Carregando...</span>
       </div>
 
-      <div v-else class="game">
-        <div class="grid">
-          <div class="playerBoard">
-            <h2>Você</h2>
-            <div class="player__grid">
-              <div
-                v-for="(row, rowIndex) of player.grid.rows"
-                :key="rowIndex"
-                class="letterRow"
-              >
+      <div v-else-if="error" class="alert alert-warning">
+        {{ error }}
+        <div class="mt-2">
+          <router-link :to="{ name: 'home' }" class="btn btn-primary">
+            Ir para página inicial
+          </router-link>
+        </div>
+      </div>
+
+      <div
+        v-else-if="match && match.winner"
+        class="alert"
+        :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-info']"
+      >
+        <p>
+          <b>Partida finalizada!</b>
+          <br />
+          <span>A palavra era: {{ match.word.toUpperCase() }}</span>
+        </p>
+        <p v-if="isLocalPlayerWinner()">
+          😎
+          <br />
+          Parabéns, você ganhou!
+        </p>
+        <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
+
+        <div class="mt-2">
+          <router-link :to="{ name: 'home' }" class="btn btn-primary">
+            Jogar outra partida
+          </router-link>
+        </div>
+      </div>
+
+      <div v-else>
+        <div v-if="isWaitingEnemyJoin()" class="mt-4 alert alert-secondary p-5">
+          <p>Aguardando seu oponente entrar...</p>
+          <a :href="getShareLink()" target="_blank" class="btn btn-success">
+            Compartilhar link via WhatsApp
+          </a>
+        </div>
+
+        <div v-else class="game">
+          <div class="grid">
+            <div class="playerBoard">
+              <h2>Você</h2>
+              <div class="player__grid">
                 <div
-                  v-for="(col, colIndex) of player.grid.cols"
-                  :key="colIndex"
-                  class="letterContainer"
-                  :class="[
-                    getKeyClass(rowIndex, colIndex),
-                    getKeyClassForNonExistentWord(rowIndex),
-                    getKeyClassForCurrentRow(rowIndex),
-                  ]"
+                  v-for="(row, rowIndex) of player.grid.rows"
+                  :key="rowIndex"
+                  class="letterRow"
                 >
-                  <span
-                    v-if="
-                      player.guesses[rowIndex] &&
-                      player.guesses[rowIndex][colIndex]
-                    "
+                  <div
+                    v-for="(col, colIndex) of player.grid.cols"
+                    :key="colIndex"
+                    class="letterContainer"
+                    :class="[
+                      getKeyClass(rowIndex, colIndex),
+                      getKeyClassForNonExistentWord(rowIndex),
+                      getKeyClassForCurrentRow(rowIndex),
+                    ]"
                   >
-                    <b>{{
-                      player.guesses[rowIndex][colIndex].toUpperCase()
-                    }}</b>
-                  </span>
-                  <span v-else>&nbsp;</span>
+                    <span
+                      v-if="
+                        player.guesses[rowIndex] &&
+                        player.guesses[rowIndex][colIndex]
+                      "
+                    >
+                      <b>{{
+                        player.guesses[rowIndex][colIndex].toUpperCase()
+                      }}</b>
+                    </span>
+                    <span v-else>&nbsp;</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="enemyBoard">
-            <h2>Oponente</h2>
-            <div class="player__grid">
-              <div
-                v-for="(row, rowIndex) of enemy.grid.rows"
-                :key="rowIndex"
-                class="letterRow"
-              >
+            <div class="vl mt-5 mb-4 d-none d-lg-md"></div>
+            <div class="enemyBoard">
+              <h2>Oponente</h2>
+              <div class="player__grid">
                 <div
-                  v-for="(col, colIndex) of enemy.grid.cols"
-                  :key="colIndex"
-                  class="letterContainer"
-                  :class="getKeyClass(rowIndex, colIndex, true)"
+                  v-for="(row, rowIndex) of enemy.grid.rows"
+                  :key="rowIndex"
+                  class="letterRow"
                 >
-                  &nbsp;
+                  <div
+                    v-for="(col, colIndex) of enemy.grid.cols"
+                    :key="colIndex"
+                    class="letterContainer"
+                    :class="getKeyClass(rowIndex, colIndex, true)"
+                  >
+                    &nbsp;
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="d-flex justify-content-center gap-2 mb-4">
-          <button class="btn btn-outline-danger" @click="deleteLastKey()">
-            Apagar última letra
-          </button>
-          <button
-            class="btn btn-outline-success"
-            @click="confirmGuess()"
-            :disabled="!isCurrentRowFull()"
-          >
-            Confimar
-          </button>
-        </div>
-
-        <div>
-          <div
-            v-for="(keyRow, index) of keyboard"
-            :key="index"
-            class="d-flex justify-content-center gap-1 mb-1"
-          >
+          <div class="d-flex justify-content-center gap-2 mb-4">
+            <button class="btn btn-outline-danger" @click="deleteLastKey()">
+              Apagar última letra
+            </button>
             <button
-              v-for="keyLetter of keyRow"
-              :key="keyLetter"
-              class="btn btn-outline-secondary btn-sm keyboard__letter"
-              :class="getKeyboardKeyClass(keyLetter)"
-              @click="onKeyPress(keyLetter)"
+              class="btn btn-outline-success"
+              @click="confirmGuess()"
+              :disabled="!isCurrentRowFull()"
             >
-              {{ keyLetter.toUpperCase() }}
+              Confimar
             </button>
           </div>
+
+          <div>
+            <div
+              v-for="(keyRow, index) of keyboard"
+              :key="index"
+              class="d-flex justify-content-center gap-1 mb-1"
+            >
+              <button
+                v-for="keyLetter of keyRow"
+                :key="keyLetter"
+                class="btn btn-outline-secondary btn-sm keyboard__letter"
+                :class="getKeyboardKeyClass(keyLetter)"
+                @click="onKeyPress(keyLetter)"
+              >
+                {{ keyLetter.toUpperCase() }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -442,11 +444,15 @@ export default {
     },
 
     setInitialDataToDb() {
-      setDoc(this.matchDocRef, {
-        [this.playerKey]: {
-          id: this.localPlayerId,
+      setDoc(
+        this.matchDocRef,
+        {
+          [this.playerKey]: {
+            id: this.localPlayerId,
+          },
         },
-      }, { merge: true })
+        { merge: true }
+      )
     },
 
     saveToDb(extraData) {
@@ -486,7 +492,6 @@ export default {
           )
         }
 
-        // this.match.winner = data?.winner
         this.match = data
       })
     },
@@ -562,6 +567,17 @@ export default {
   border: 1px solid black;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.vl {
+  border-left: 1px dashed #ccc;
+  opacity: .5;
+}
+
+@media (min-width: 768px) {
+  .gameViewRoot {
+    height: 100vh;
+  }
 }
 
 @media (max-width: 700px) {

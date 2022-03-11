@@ -1,22 +1,24 @@
 <template>
-  <div class="home">
-    <h1>Palavreando</h1>
-    <div class="mt-3">
-      <button
-        class="btn btn-primary btn-lg"
-        :disabled="isLoading.gameCreation"
-        @click="play()"
-      >
-        <template v-if="isLoading.gameCreation">
-          <span
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          <span class="visually-hidden">Loading...</span>
-        </template>
-        <template v-else>JOGAR</template>
-      </button>
+  <div class="home vh-100 d-flex align-items-center justify-content-center">
+    <div>
+      <h1>Palavreando</h1>
+      <div class="mt-3">
+        <button
+          class="btn btn-primary btn-lg"
+          :disabled="isLoading.gameCreation"
+          @click="play()"
+        >
+          <template v-if="isLoading.gameCreation">
+            <span
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span class="visually-hidden">Loading...</span>
+          </template>
+          <template v-else>JOGAR</template>
+        </button>
+      </div>
     </div>
   </div>
 </template>
