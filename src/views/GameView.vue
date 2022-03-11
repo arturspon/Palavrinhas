@@ -1,6 +1,6 @@
 <template>
   <div class="container pb-4">
-    <h1>Palavreando</h1>
+    <h1>Palavrinhas</h1>
 
     <div
       v-if="isLoading.match"
@@ -34,8 +34,6 @@
         😎
         <br />
         Parabéns, você ganhou!
-        <br />
-        <span>A palavra era: {{ match.word.toUpperCase() }}</span>
       </p>
       <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
 
@@ -47,13 +45,14 @@
     </div>
 
     <div v-else>
-      <div class="mt-2">
-        <a :href="getShareLink()" target="_blank">
+      <div v-if="isWaitingEnemyJoin()" class="mt-4 alert alert-secondary p-5">
+        <p>Aguardando seu oponente entrar...</p>
+        <a :href="getShareLink()" target="_blank" class="btn btn-success">
           Compartilhar link via WhatsApp
         </a>
       </div>
 
-      <div class="game">
+      <div v-else class="game">
         <div class="grid">
           <div class="playerBoard">
             <h2>Você</h2>
@@ -145,7 +144,7 @@
 </template>
 
 <script>
-import { doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import getWords from '@/utils/words'
 
 export default {
@@ -254,15 +253,16 @@ export default {
 
       this.player.currentRow =
         this.player.guesses.length == 0 ? 0 : this.player.guesses.length - 1
-      this.confirmGuess()
 
+      this.confirmGuess()
       this.attachDbListener()
+      this.setInitialDataToDb()
 
       this.isLoading.match = false
     },
 
     attachKeyboardListener() {
-      const validKeys = this.keyboard.reduce(
+      const validLetterKeys = this.keyboard.reduce(
         (carry, keyboardRow) => [...carry, ...keyboardRow],
         []
       )
@@ -272,9 +272,11 @@ export default {
 
         if (pressedKey == 'backspace') {
           return this.deleteLastKey()
+        } else if (pressedKey == 'enter') {
+          return this.confirmGuess()
         }
 
-        const isValidKey = validKeys.includes(pressedKey)
+        const isValidKey = validLetterKeys.includes(pressedKey)
         if (isValidKey) {
           this.onKeyPress(pressedKey)
         }
@@ -356,9 +358,13 @@ export default {
 
       this.isCurrentGuessValidWord = true
 
+      const isLastGuess = this.player.currentRow == this.player.grid.rows - 1
       const isGuessCorrect = guessWord == this.match.word
+
       if (isGuessCorrect) {
-        return this.finishGame()
+        return this.finishGame(true)
+      } else if (isLastGuess) {
+        return this.finishGame(false)
       }
 
       this.player.currentRow++
@@ -435,6 +441,14 @@ export default {
       return this.match.word.indexOf(key) !== -1
     },
 
+    setInitialDataToDb() {
+      setDoc(this.matchDocRef, {
+        [this.playerKey]: {
+          id: this.localPlayerId,
+        },
+      }, { merge: true })
+    },
+
     saveToDb(extraData) {
       let index = 0
       const arrayObjectOfGuesses = {}
@@ -465,18 +479,32 @@ export default {
     attachDbListener() {
       this.unsubscribeDbListener = onSnapshot(this.matchDocRef, (doc) => {
         const data = doc.data()
-        this.enemy.guesses = Object.values(
-          data[this.getEnemyPlayerKey()].guesses
-        )
-        this.match.winner = data.winner
+
+        if (data?.[this.getEnemyPlayerKey()]?.guesses) {
+          this.enemy.guesses = Object.values(
+            data[this.getEnemyPlayerKey()].guesses
+          )
+        }
+
+        // this.match.winner = data?.winner
+        this.match = data
       })
     },
 
-    finishGame() {
+    isWaitingEnemyJoin() {
+      return !this.match[this.getEnemyPlayerKey()]?.id
+    },
+
+    finishGame(isLocalPlayerWinner) {
+      const winnerId = isLocalPlayerWinner
+        ? this.localPlayerId
+        : this.match[this.getEnemyPlayerKey()].id
+
       this.saveToDb({
-        winner: this.localPlayerId,
+        winner: winnerId,
       })
-      this.match.winner = this.localPlayerId
+
+      this.match.winner = winnerId
     },
 
     isLocalPlayerWinner() {

@@ -54,6 +54,8 @@ export default {
           guesses: [],
         },
         winner: null,
+        started_at: null,
+        ended_at: null,
         created_at: Timestamp.now()
       }
 

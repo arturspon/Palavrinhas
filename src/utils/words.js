@@ -956,6 +956,7 @@ const words = [
   'rédea',
   'anzol',
   'árdua',
+  'luvas',
 ]
 
 export default function getWords() {
