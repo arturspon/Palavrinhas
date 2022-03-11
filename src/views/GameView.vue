@@ -355,6 +355,16 @@ export default {
 
       if (!this.isValidWord(guessWord)) {
         this.isCurrentGuessValidWord = false
+        this.$swal({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          icon: 'error',
+          title: 'Palavra inválida',
+          text: 'Apague e tente outra.',
+        });
         return
       }
 
