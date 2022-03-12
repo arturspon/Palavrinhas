@@ -107,7 +107,7 @@
           class="alert alert-secondary p-4"
         >
           <p>Aguardando seu oponente aceitar seu pedido de novo jogo...</p>
-          <router-link :to="{ name: 'home' }" class="btn btn-primary">
+          <router-link :to="{ name: 'home' }" class="btn btn-danger">
             Cancelar e ir para página inicial
           </router-link>
         </div>
@@ -702,6 +702,12 @@ export default {
 </script>
 
 <style scoped>
+.gameViewRoot {
+  background-image: url('~@/assets/images/bgtile3.png');
+  background-repeat: repeat;
+  background-size: 8rem;
+}
+
 .game {
   display: flex;
   flex-flow: column;

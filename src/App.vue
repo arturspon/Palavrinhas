@@ -11,8 +11,10 @@
 </template>
 
 <style lang="scss">
+@import url('https://fonts.googleapis.com/css2?family=Fredoka&display=swap');
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Fredoka', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -30,5 +32,9 @@ nav {
       color: #42b983;
     }
   }
+}
+
+.card {
+  border-radius: 1rem;
 }
 </style>
