@@ -236,6 +236,8 @@ import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
 import { createMatch, rematch } from '@/services/match'
 
+const saveToDbDebounceIntervalSeconds = 1
+
 export default {
   data() {
     return {
@@ -257,6 +259,7 @@ export default {
       error: null,
       isMatchFull: false,
       isRematchDialogVisible: false,
+      saveToDbDebounceInterval: false,
 
       isCurrentGuessValidWord: true,
       shakeInvalidWord: false,
@@ -401,7 +404,7 @@ export default {
       const row = this.getCurrentRow()
       row.push(key)
 
-      this.saveToDb()
+      this.saveToDbWithDebounce()
       this.$forceUpdate()
     },
 
@@ -433,7 +436,7 @@ export default {
       this.isCurrentGuessValidWord = true
 
       this.$forceUpdate()
-      this.saveToDb()
+      this.saveToDbWithDebounce()
     },
 
     isRowConfirmed(rowIndex) {
@@ -589,6 +592,17 @@ export default {
       }
 
       setDoc(this.matchDocRef, data, { merge: true })
+    },
+
+    saveToDbWithDebounce() {
+      if (this.saveToDbDebounceInterval) {
+        clearTimeout(this.saveToDbDebounceInterval)
+      }
+
+      this.saveToDbDebounceInterval = setTimeout(() => {
+        this.saveToDb()
+        this.saveToDbDebounceInterval = null
+      }, saveToDbDebounceIntervalSeconds * 1000)
     },
 
     saveToDb(extraData) {
