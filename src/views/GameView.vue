@@ -542,7 +542,19 @@ export default {
     },
 
     getKeyClassAnimationCurrentLetter(rowIndex, colIndex) {
-      const isCurrentCol = this?.player?.guesses?.[this?.player?.guesses.length - 1].length == colIndex + 1
+      if (!this.player.guesses || !Array.isArray(this.player.guesses) || this.player.guesses.length == 0) {
+        return
+      }
+
+      const index = this.player.guesses.length == 0 ? 0 : (this.player.guesses.length - 1)
+      const row = this.player.guesses[index]
+
+      if (!row || !Array.isArray(row)) {
+        return
+      }
+
+      const isCurrentCol = row.length == colIndex + 1
+
       if (!this.isCurrentRow(rowIndex) || !isCurrentCol) {
         return
       }
