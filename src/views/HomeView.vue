@@ -1,7 +1,7 @@
 <template>
   <div class="home vh-100 d-flex align-items-center justify-content-center">
     <div>
-      <h1>Palavreando</h1>
+      <h1>Palavrinhas</h1>
       <div class="mt-3">
         <button
           class="btn btn-primary btn-lg"

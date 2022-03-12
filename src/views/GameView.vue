@@ -51,6 +51,15 @@
           <router-link :to="{ name: 'home' }" class="btn btn-primary">
             Jogar outra partida
           </router-link>
+          <br />
+          <a
+            :href="buildWhatsAppUrl(shareGameResult())"
+            class="btn btn-success mt-1"
+            target="_blank"
+          >
+            Compartilhar
+            {{ isLocalPlayerWinner() ? 'vitória' : 'resultado' }} no WhatsApp
+          </a>
         </div>
       </div>
 
@@ -545,8 +554,35 @@ export default {
 
     getShareLink() {
       const text = `Venha me enfrentar no Palavreando: ${window.location.href}`
+      return this.buildWhatsAppUrl(text)
+    },
+
+    buildWhatsAppUrl(text) {
       const encodedText = encodeURIComponent(text)
       return `https://api.whatsapp.com/send?text=${encodedText}`
+    },
+
+    shareGameResult() {
+      const winLoseWord = this.isLocalPlayerWinner() ? 'Ganhei' : 'Perdi'
+
+      let message =
+        `${winLoseWord} do meu oponente no *Palavrinhas.com*\n` +
+        `A palavra era *${this.match.word}*, se liga no resultado:\n\n`
+
+      for (let rowIndex = 0; rowIndex < this.player.grid.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < this.player.grid.cols; colIndex++) {
+          const key = this.player.guesses?.[rowIndex]?.[colIndex]
+          message += this.isKeyCorrect(key, colIndex)
+            ? '🟩'
+            : this.isKeyInWord(key)
+            ? '🟨'
+            : '🟥'
+        }
+        message += '\n'
+      }
+
+      message += '\nJogue também em https://palavrinhas.com'
+      return message
     },
   },
 }
