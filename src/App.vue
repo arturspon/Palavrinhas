@@ -21,6 +21,12 @@
   color: #2c3e50;
 }
 
+body {
+  background-image: url('~@/assets/images/bgtile3.png');
+  background-repeat: repeat;
+  background-size: 8rem;
+}
+
 nav {
   padding: 30px;
 

@@ -73,11 +73,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.home {
-  background-image: url('~@/assets/images/bgtile3.png');
-  background-repeat: repeat;
-  background-size: 8rem;
-}
-</style>

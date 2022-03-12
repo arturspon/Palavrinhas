@@ -1,8 +1,8 @@
 <template>
-  <div class="gameViewRoot d-flex align-items-center justify-content-center">
-    <div class="container">
-      <h1>Palavrinhas</h1>
-
+  <div
+    class="gameViewRoot d-flex align-items-center justify-content-center py-3"
+  >
+    <div class="container-fluid">
       <div
         v-if="isLoading.match"
         class="spinner-border"
@@ -124,87 +124,105 @@
         <div v-else class="game">
           <div class="grid">
             <div class="playerBoard">
-              <h2>Você</h2>
-              <div class="player__grid">
-                <div
-                  v-for="(row, rowIndex) of player.grid.rows"
-                  :key="rowIndex"
-                  class="letterRow"
-                >
-                  <div
-                    v-for="(col, colIndex) of player.grid.cols"
-                    :key="colIndex"
-                    class="letterContainer"
-                    :class="[
-                      getKeyClass(rowIndex, colIndex),
-                      getKeyClassForNonExistentWord(rowIndex),
-                      getKeyClassForCurrentRow(rowIndex),
-                    ]"
-                  >
-                    <span
-                      v-if="
-                        player.guesses[rowIndex] &&
-                        player.guesses[rowIndex][colIndex]
-                      "
+              <div class="card px-2">
+                <div class="card-body">
+                  <h2>Você</h2>
+                  <div class="player__grid pt-2">
+                    <div
+                      v-for="(row, rowIndex) of player.grid.rows"
+                      :key="rowIndex"
+                      class="letterRow"
+                      :class="{'shake-horizontal': shakeInvalidWord && isCurrentRow(rowIndex)}"
                     >
-                      <b>{{
-                        player.guesses[rowIndex][colIndex].toUpperCase()
-                      }}</b>
-                    </span>
-                    <span v-else>&nbsp;</span>
+                      <div
+                        v-for="(col, colIndex) of player.grid.cols"
+                        :key="colIndex"
+                        class="letterContainer"
+                        :class="[
+                          getKeyClass(rowIndex, colIndex),
+                          getKeyClassForNonExistentWord(rowIndex),
+                          getKeyClassForCurrentRow(rowIndex),
+                        ]"
+                      >
+                        <span
+                          v-if="
+                            player.guesses[rowIndex] &&
+                            player.guesses[rowIndex][colIndex]
+                          "
+                        >
+                          <b>{{
+                            player.guesses[rowIndex][colIndex].toUpperCase()
+                          }}</b>
+                        </span>
+                        <span v-else>&nbsp;</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="vl mt-5 mb-4 d-none d-lg-md"></div>
+            <div class="d-md-none py-1"></div>
             <div class="enemyBoard">
-              <h2>Oponente</h2>
-              <div class="player__grid">
-                <div
-                  v-for="(row, rowIndex) of enemy.grid.rows"
-                  :key="rowIndex"
-                  class="letterRow"
-                >
-                  <div
-                    v-for="(col, colIndex) of enemy.grid.cols"
-                    :key="colIndex"
-                    class="letterContainer"
-                    :class="getKeyClass(rowIndex, colIndex, true)"
-                  >
-                    &nbsp;
+              <div class="card px-2">
+                <div class="card-body">
+                  <h2>Oponente</h2>
+                  <div class="player__grid pt-2">
+                    <div
+                      v-for="(row, rowIndex) of enemy.grid.rows"
+                      :key="rowIndex"
+                      class="letterRow"
+                    >
+                      <div
+                        v-for="(col, colIndex) of enemy.grid.cols"
+                        :key="colIndex"
+                        class="letterContainer"
+                        :class="getKeyClass(rowIndex, colIndex, true)"
+                      >
+                        &nbsp;
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="d-flex justify-content-center gap-2 mb-4">
-            <button class="btn btn-outline-danger" @click="deleteLastKey()">
-              Apagar última letra
-            </button>
-            <button
-              class="btn btn-outline-success"
-              @click="confirmGuess()"
-              :disabled="!isCurrentRowFull()"
-            >
-              Confimar
-            </button>
           </div>
 
-          <div>
-            <div
-              v-for="(keyRow, index) of keyboard"
-              :key="index"
-              class="d-flex justify-content-center gap-1 mb-1"
-            >
-              <button
-                v-for="keyLetter of keyRow"
-                :key="keyLetter"
-                class="btn btn-outline-secondary btn-sm keyboard__letter"
-                :class="getKeyboardKeyClass(keyLetter)"
-                @click="onKeyPress(keyLetter)"
-              >
-                {{ keyLetter.toUpperCase() }}
-              </button>
+          <div class="d-flex justify-content-center mt-2">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                  <button
+                    class="btn btn-outline-danger"
+                    @click="deleteLastKey()"
+                  >
+                    Apagar última letra
+                  </button>
+                  <button
+                    class="btn btn-outline-success"
+                    @click="confirmGuess()"
+                    :disabled="!isCurrentRowFull()"
+                  >
+                    Confimar
+                  </button>
+                </div>
+                <div>
+                  <div
+                    v-for="(keyRow, index) of keyboard"
+                    :key="index"
+                    class="d-flex justify-content-center gap-1 mb-1"
+                  >
+                    <button
+                      v-for="keyLetter of keyRow"
+                      :key="keyLetter"
+                      class="btn btn-outline-secondary btn-sm keyboard__letter"
+                      :class="getKeyboardKeyClass(keyLetter)"
+                      @click="onKeyPress(keyLetter)"
+                    >
+                      {{ keyLetter.toUpperCase() }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -241,6 +259,7 @@ export default {
       isRematchDialogVisible: false,
 
       isCurrentGuessValidWord: true,
+      shakeInvalidWord: false,
 
       playerKey: null,
       player: {
@@ -268,7 +287,7 @@ export default {
       keyboard: [
         ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
         ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç'],
-        ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+        ['z', 'x', 'c', 'v', 'b', 'n', 'm', 'DEL', '✔'],
       ],
       keyStatuses: {},
     }
@@ -366,7 +385,11 @@ export default {
     },
 
     onKeyPress(key) {
-      if (this.isPlayerGridFull() || this.isCurrentRowFull()) {
+      if (key == '✔') {
+        return this.confirmGuess()
+      } else if (key == 'DEL') {
+        return this.deleteLastKey()
+      } else if (this.isPlayerGridFull() || this.isCurrentRowFull()) {
         return
       }
 
@@ -435,6 +458,16 @@ export default {
 
       if (!this.isValidWord(guessWord)) {
         this.isCurrentGuessValidWord = false
+
+        this.shakeInvalidWord = false
+        this.$nextTick(() => {
+          this.shakeInvalidWord = true
+
+          setTimeout(() => {
+            this.shakeInvalidWord = false
+          }, 1000);
+        })
+
         this.$swal({
           toast: true,
           position: 'top-end',
@@ -490,12 +523,22 @@ export default {
       }
     },
 
+    isCurrentRow(rowIndex) {
+      return rowIndex == this.player.currentRow
+    },
+
     getKeyClassForCurrentRow(rowIndex) {
-      const isCurrentRow = rowIndex == this.player.currentRow
+      const isCurrentRow = this.isCurrentRow(rowIndex)
       return isCurrentRow && 'letterContainer--currentRow'
     },
 
     getKeyboardKeyClass(key) {
+      if (key == '✔') {
+        return 'border border-success btn-outline-success'
+      } else if (key == 'DEL') {
+        return 'border border-danger btn-outline-danger'
+      }
+
       return this.keyStatuses[key] == 'right'
         ? 'bg-success text-white'
         : this.keyStatuses[key] == 'halfRight'
@@ -702,12 +745,6 @@ export default {
 </script>
 
 <style scoped>
-.gameViewRoot {
-  background-image: url('~@/assets/images/bgtile3.png');
-  background-repeat: repeat;
-  background-size: 8rem;
-}
-
 .game {
   display: flex;
   flex-flow: column;
@@ -719,7 +756,6 @@ export default {
   display: flex;
   flex-flow: row;
   justify-content: space-evenly;
-  margin-bottom: 16px;
   flex: 1;
 }
 
@@ -751,15 +787,14 @@ export default {
   cursor: pointer;
 }
 
-.vl {
-  border-left: 1px dashed #ccc;
-  opacity: 0.5;
+.card {
+  background-color: #eeeeee;
 }
 
 @media (min-width: 768px) {
-  .gameViewRoot {
+  /* .gameViewRoot {
     height: 100vh;
-  }
+  } */
 }
 
 @media (max-width: 700px) {
@@ -783,11 +818,187 @@ export default {
     flex: 1;
   }
 
-  .enemyBoard > .player__grid > .letterRow {
+  .letterRow {
     margin-bottom: 0.1rem;
   }
-  .enemyBoard > .player__grid > .letterRow > .letterContainer {
-    padding: 0.1rem 0.7em;
+  .letterContainer {
+    padding: 0rem 0.6em;
   }
+  /* .enemyBoard > .card > .card-body > .player__grid > .letterRow {
+    margin-bottom: 0.1rem;
+  }
+  .enemyBoard > .card > .card-body > .player__grid > .letterRow > .letterContainer {
+    padding: 0rem 0.6em;
+  } */
+}
+
+.shake-horizontal {
+  transform-origin: center center;
+}
+.shake-freeze,
+.shake-constant.shake-constant--hover:hover,
+.shake-trigger:hover .shake-constant.shake-constant--hover {
+  animation-play-state: paused;
+}
+@keyframes shake-horizontal {
+  2% {
+    transform: translate(-7px, 0) rotate(0);
+  }
+  4% {
+    transform: translate(-6px, 0) rotate(0);
+  }
+  6% {
+    transform: translate(8px, 0) rotate(0);
+  }
+  8% {
+    transform: translate(-7px, 0) rotate(0);
+  }
+  10% {
+    transform: translate(-8px, 0) rotate(0);
+  }
+  12% {
+    transform: translate(-3px, 0) rotate(0);
+  }
+  14% {
+    transform: translate(-8px, 0) rotate(0);
+  }
+  16% {
+    transform: translate(6px, 0) rotate(0);
+  }
+  18% {
+    transform: translate(7px, 0) rotate(0);
+  }
+  20% {
+    transform: translate(-8px, 0) rotate(0);
+  }
+  22% {
+    transform: translate(-4px, 0) rotate(0);
+  }
+  24% {
+    transform: translate(8px, 0) rotate(0);
+  }
+  26% {
+    transform: translate(-5px, 0) rotate(0);
+  }
+  28% {
+    transform: translate(8px, 0) rotate(0);
+  }
+  30% {
+    transform: translate(-9px, 0) rotate(0);
+  }
+  32% {
+    transform: translate(-5px, 0) rotate(0);
+  }
+  34% {
+    transform: translate(9px, 0) rotate(0);
+  }
+  36% {
+    transform: translate(7px, 0) rotate(0);
+  }
+  38% {
+    transform: translate(-3px, 0) rotate(0);
+  }
+  40% {
+    transform: translate(9px, 0) rotate(0);
+  }
+  42% {
+    transform: translate(6px, 0) rotate(0);
+  }
+  44% {
+    transform: translate(1px, 0) rotate(0);
+  }
+  46% {
+    transform: translate(-4px, 0) rotate(0);
+  }
+  48% {
+    transform: translate(9px, 0) rotate(0);
+  }
+  50% {
+    transform: translate(3px, 0) rotate(0);
+  }
+  52% {
+    transform: translate(2px, 0) rotate(0);
+  }
+  54% {
+    transform: translate(6px, 0) rotate(0);
+  }
+  56% {
+    transform: translate(0px, 0) rotate(0);
+  }
+  58% {
+    transform: translate(3px, 0) rotate(0);
+  }
+  60% {
+    transform: translate(-2px, 0) rotate(0);
+  }
+  62% {
+    transform: translate(8px, 0) rotate(0);
+  }
+  64% {
+    transform: translate(8px, 0) rotate(0);
+  }
+  66% {
+    transform: translate(-2px, 0) rotate(0);
+  }
+  68% {
+    transform: translate(-3px, 0) rotate(0);
+  }
+  70% {
+    transform: translate(5px, 0) rotate(0);
+  }
+  72% {
+    transform: translate(0px, 0) rotate(0);
+  }
+  74% {
+    transform: translate(-8px, 0) rotate(0);
+  }
+  76% {
+    transform: translate(0px, 0) rotate(0);
+  }
+  78% {
+    transform: translate(1px, 0) rotate(0);
+  }
+  80% {
+    transform: translate(9px, 0) rotate(0);
+  }
+  82% {
+    transform: translate(-5px, 0) rotate(0);
+  }
+  84% {
+    transform: translate(5px, 0) rotate(0);
+  }
+  86% {
+    transform: translate(3px, 0) rotate(0);
+  }
+  88% {
+    transform: translate(3px, 0) rotate(0);
+  }
+  90% {
+    transform: translate(3px, 0) rotate(0);
+  }
+  92% {
+    transform: translate(-3px, 0) rotate(0);
+  }
+  94% {
+    transform: translate(-1px, 0) rotate(0);
+  }
+  96% {
+    transform: translate(2px, 0) rotate(0);
+  }
+  98% {
+    transform: translate(7px, 0) rotate(0);
+  }
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+.shake-horizontal,
+.shake-horizontal.shake-freeze,
+.shake-horizontal.shake-constant {
+  animation-name: shake-horizontal;
+  animation-duration: 100ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 3;
 }
 </style>
