@@ -25,7 +25,7 @@
 
 <script>
 import { collection, addDoc, Timestamp } from 'firebase/firestore'
-import getWords from '@/utils/words'
+import { getWordsElegibleToMatch } from '@/utils/words'
 
 export default {
   name: 'HomeView',
@@ -73,7 +73,7 @@ export default {
     },
 
     getRandomWord() {
-      const words = getWords()
+      const words = getWordsElegibleToMatch()
       const min = 0
       const max = Math.floor(words.length)
       const wordIndex = Math.floor(Math.random() * (max - min + 1)) + min

@@ -21,6 +21,15 @@
         </div>
       </div>
 
+      <div v-else-if="isMatchFull" class="alert alert-warning">
+        <p>Oops... Essa partida já está cheia!</p>
+        <div class="mt-2">
+          <router-link :to="{ name: 'home' }" class="btn btn-primary">
+            Iniciar nova partida
+          </router-link>
+        </div>
+      </div>
+
       <div
         v-else-if="match && match.winner"
         class="alert"
@@ -147,7 +156,7 @@
 
 <script>
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
-import getWords from '@/utils/words'
+import { getAllPtBrWords } from '@/utils/words'
 
 export default {
   data() {
@@ -166,6 +175,7 @@ export default {
       match: null,
       unsubscribeDbListener: null,
       error: null,
+      isMatchFull: false,
 
       isCurrentGuessValidWord: true,
 
@@ -202,7 +212,7 @@ export default {
   },
 
   created() {
-    this.words = getWords()
+    this.words = getAllPtBrWords()
     this.matchId = this.$route.params.gameId
     this.getLocalPlayerId()
     this.loadMatch()
@@ -256,11 +266,18 @@ export default {
       this.player.currentRow =
         this.player.guesses.length == 0 ? 0 : this.player.guesses.length - 1
 
+      this.validateCurrentPlayer()
       this.confirmGuess()
       this.attachDbListener()
       this.setInitialDataToDb()
 
       this.isLoading.match = false
+    },
+
+    validateCurrentPlayer() {
+      this.isMatchFull =
+        this.match[this.getPlayerKey()].id &&
+        this.match[this.getPlayerKey()].id != this.localPlayerId
     },
 
     attachKeyboardListener() {
@@ -364,7 +381,7 @@ export default {
           icon: 'error',
           title: 'Palavra inválida',
           text: 'Apague e tente outra.',
-        });
+        })
         return
       }
 
@@ -581,7 +598,7 @@ export default {
 
 .vl {
   border-left: 1px dashed #ccc;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 @media (min-width: 768px) {
