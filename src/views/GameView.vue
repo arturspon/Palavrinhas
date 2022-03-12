@@ -632,7 +632,9 @@ export default {
       for (let rowIndex = 0; rowIndex < this.player.grid.rows; rowIndex++) {
         for (let colIndex = 0; colIndex < this.player.grid.cols; colIndex++) {
           const key = this.player.guesses?.[rowIndex]?.[colIndex]
-          message += this.isKeyCorrect(key, colIndex)
+          message += !key
+            ? '⬜'
+            : this.isKeyCorrect(key, colIndex)
             ? '🟩'
             : this.isKeyInWord(key)
             ? '🟨'
