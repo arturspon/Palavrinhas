@@ -2984,3 +2984,11 @@ export function getAllPtBrWords() {
     ...getWordsElegibleToMatch(),
   ]
 }
+
+export function getRandomWord() {
+  const words = getWordsElegibleToMatch()
+  const min = 0
+  const max = Math.floor(words.length)
+  const wordIndex = Math.floor(Math.random() * (max - min + 1)) + min
+  return words[wordIndex]
+}

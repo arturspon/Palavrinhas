@@ -14,7 +14,7 @@
               role="status"
               aria-hidden="true"
             ></span>
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">Carregando...</span>
           </template>
           <template v-else>JOGAR</template>
         </button>
@@ -24,8 +24,7 @@
 </template>
 
 <script>
-import { collection, addDoc, Timestamp } from 'firebase/firestore'
-import { getWordsElegibleToMatch } from '@/utils/words'
+import { createMatch } from '@/services/match'
 
 export default {
   name: 'HomeView',
@@ -42,27 +41,7 @@ export default {
     async play() {
       this.isLoading.gameCreation = true
 
-      const hostId = this.uuidv4()
-      localStorage.setItem('hostId', hostId)
-
-      const gameData = {
-        word: this.getRandomWord(),
-        host: {
-          id: hostId,
-          guesses: [],
-        },
-        enemy: {
-          id: null,
-          guesses: [],
-        },
-        winner: null,
-        started_at: null,
-        ended_at: null,
-        created_at: Timestamp.now()
-      }
-
-      const matchesCollection = collection(this.$db, 'matches')
-      const docRef = await addDoc(matchesCollection, gameData)
+      const docRef = await createMatch(this.$db)
 
       this.$router.push({
         name: 'game',
@@ -71,20 +50,6 @@ export default {
         }
       })
     },
-
-    getRandomWord() {
-      const words = getWordsElegibleToMatch()
-      const min = 0
-      const max = Math.floor(words.length)
-      const wordIndex = Math.floor(Math.random() * (max - min + 1)) + min
-      return words[wordIndex]
-    },
-
-    uuidv4() {
-      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-      );
-    }
   },
 }
 </script>

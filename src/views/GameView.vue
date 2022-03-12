@@ -48,10 +48,48 @@
         <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
 
         <div class="mt-2">
-          <router-link :to="{ name: 'home' }" class="btn btn-primary">
-            Jogar outra partida
-          </router-link>
+          <button
+            class="btn btn-primary"
+            @click="playAnotherMatch(false)"
+            :disabled="
+              isLoading.playAnotherMatchAnotherEnemy ||
+              isLoading.playAnotherMatchSameEnemy
+            "
+          >
+            <template v-if="isLoading.playAnotherMatchAnotherEnemy">
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span class="visually-hidden">Carregando...</span>
+            </template>
+            <template v-else>Jogar com outro oponente</template>
+          </button>
+
           <br />
+
+          <button
+            class="btn btn-warning mt-1"
+            @click="playAnotherMatch(true)"
+            :disabled="
+              isLoading.playAnotherMatchSameEnemy ||
+              isLoading.playAnotherMatchAnotherEnemy
+            "
+          >
+            <template v-if="isLoading.playAnotherMatchSameEnemy">
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span class="visually-hidden">Carregando...</span>
+            </template>
+            <template v-else>Jogar com o mesmo oponente</template>
+          </button>
+
+          <br />
+
           <a
             :href="buildWhatsAppUrl(shareGameResult())"
             class="btn btn-success mt-1"
@@ -64,7 +102,19 @@
       </div>
 
       <div v-else>
-        <div v-if="isWaitingEnemyJoin()" class="mt-4 alert alert-secondary p-5">
+        <div
+          v-if="isWaitingEnemyJoinRematch()"
+          class="alert alert-secondary p-4"
+        >
+          <p>Aguardando seu oponente aceitar seu pedido de novo jogo...</p>
+          <router-link :to="{ name: 'home' }" class="btn btn-primary">
+            Cancelar e ir para página inicial
+          </router-link>
+        </div>
+        <div
+          v-else-if="isWaitingEnemyJoin()"
+          class="mt-4 alert alert-secondary p-4"
+        >
           <p>Aguardando seu oponente entrar...</p>
           <a :href="getShareLink()" target="_blank" class="btn btn-success">
             Compartilhar link via WhatsApp
@@ -166,12 +216,15 @@
 <script>
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
+import { createMatch, rematch } from '@/services/match'
 
 export default {
   data() {
     return {
       isLoading: {
         match: true,
+        playAnotherMatchAnotherEnemy: false,
+        playAnotherMatchSameEnemy: false,
       },
 
       words: [],
@@ -185,6 +238,7 @@ export default {
       unsubscribeDbListener: null,
       error: null,
       isMatchFull: false,
+      isRematchDialogVisible: false,
 
       isCurrentGuessValidWord: true,
 
@@ -480,15 +534,13 @@ export default {
     },
 
     setInitialDataToDb() {
-      setDoc(
-        this.matchDocRef,
-        {
-          [this.playerKey]: {
-            id: this.localPlayerId,
-          },
+      const data = {
+        [this.playerKey]: {
+          id: this.localPlayerId,
         },
-        { merge: true }
-      )
+      }
+
+      setDoc(this.matchDocRef, data, { merge: true })
     },
 
     saveToDb(extraData) {
@@ -529,7 +581,15 @@ export default {
         }
 
         this.match = data
+
+        if (data.rematchId && !this.isLoading.playAnotherMatchSameEnemy) {
+          this.showRematchDialog()
+        }
       })
+    },
+
+    isWaitingEnemyJoinRematch() {
+      return this.match.parentMatchId && !this.match.isRematchAccepted
     },
 
     isWaitingEnemyJoin() {
@@ -583,6 +643,57 @@ export default {
 
       message += '\nJogue também em https://palavrinhas.com'
       return message
+    },
+
+    async playAnotherMatch(withSameEnemy) {
+      this.isLoading.playAnotherMatchAnotherEnemy = !withSameEnemy
+      this.isLoading.playAnotherMatchSameEnemy = withSameEnemy
+
+      const docRef = withSameEnemy
+        ? await rematch(this.$db, this.matchDocRef, this.match)
+        : await createMatch(this.$db)
+
+      this.$router.replace({
+        name: 'game',
+        params: {
+          gameId: docRef.id,
+        },
+      })
+      this.$router.go()
+    },
+
+    showRematchDialog() {
+      if (this.isRematchDialogVisible) {
+        return
+      }
+
+      this.$swal({
+        title: 'Pedido de revanche',
+        text: 'Seu oponente pediu para jogar de novo, você aceita?',
+        showCancelButton: true,
+        confirmButtonText: 'Aceitar',
+        cancelButtonText: 'Cancelar',
+      }).then(async (result) => {
+        const rematchDocRef = doc(this.$db, 'matches', this.match.rematchId)
+
+        await updateDoc(
+          rematchDocRef,
+          { isRematchAccepted: true },
+          { merge: true }
+        )
+
+        if (result.isConfirmed) {
+          this.$router.replace({
+            name: 'game',
+            params: {
+              gameId: this.match.rematchId,
+            },
+          })
+          this.$router.go()
+        }
+      })
+
+      this.isRematchDialogVisible = true
     },
   },
 }
