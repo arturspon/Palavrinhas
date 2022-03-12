@@ -5,7 +5,7 @@
     <div class="container-fluid">
       <div
         v-if="isLoading.match"
-        class="spinner-border"
+        class="spinner-border text-white"
         style="width: 3rem; height: 3rem"
         role="status"
       >
@@ -33,21 +33,21 @@
       <div
         v-else-if="match && match.winner"
         class="alert"
-        :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-info']"
+        :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
       >
         <p>
-          <b>Partida finalizada!</b>
+          <b>{{ isLocalPlayerWinner() ? '😎 Parabéns, você ganhou!' : 'Você perdeu.' }}</b>
           <br />
           <span>A palavra era: {{ match.word.toUpperCase() }}</span>
         </p>
-        <p v-if="isLocalPlayerWinner()">
-          😎
-          <br />
-          Parabéns, você ganhou!
-        </p>
-        <p v-else>Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
+        <p v-if="!isLocalPlayerWinner()">Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
 
-        <div class="mt-2">
+        <div>
+          <span>Seu resultado:</span>
+          <div v-html="getGameResultEmojis('<br>')"></div>
+        </div>
+
+        <div class="mt-3">
           <button
             class="btn btn-primary"
             @click="playAnotherMatch(false)"
@@ -107,7 +107,7 @@
           class="alert alert-secondary p-4"
         >
           <p>Aguardando seu oponente aceitar seu pedido de novo jogo...</p>
-          <router-link :to="{ name: 'home' }" class="btn btn-danger">
+          <router-link :to="{ name: 'home' }" class="btn btn-outline-danger">
             Cancelar e ir para página inicial
           </router-link>
         </div>
@@ -289,6 +289,9 @@ export default {
         ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç'],
         ['z', 'x', 'c', 'v', 'b', 'n', 'm', 'DEL', '✔'],
       ],
+      overrideKeyMap: {
+        'ç': 'c',
+      },
       keyStatuses: {},
     }
   },
@@ -392,6 +395,8 @@ export default {
       } else if (this.isPlayerGridFull() || this.isCurrentRowFull()) {
         return
       }
+
+      key = this.overrideKeyMap[key] || key
 
       const row = this.getCurrentRow()
       row.push(key)
@@ -665,17 +670,13 @@ export default {
       return `https://api.whatsapp.com/send?text=${encodedText}`
     },
 
-    shareGameResult() {
-      const winLoseWord = this.isLocalPlayerWinner() ? 'Ganhei' : 'Perdi'
-
-      let message =
-        `${winLoseWord} do meu oponente no *Palavrinhas.com*\n` +
-        `A palavra era *${this.match.word}*, se liga no resultado:\n\n`
+    getGameResultEmojis(lineBreakCharacter) {
+      let emojis = ''
 
       for (let rowIndex = 0; rowIndex < this.player.grid.rows; rowIndex++) {
         for (let colIndex = 0; colIndex < this.player.grid.cols; colIndex++) {
           const key = this.player.guesses?.[rowIndex]?.[colIndex]
-          message += !key
+          emojis += !key
             ? '⬜'
             : this.isKeyCorrect(key, colIndex)
             ? '🟩'
@@ -683,8 +684,20 @@ export default {
             ? '🟨'
             : '🟥'
         }
-        message += '\n'
+        emojis += lineBreakCharacter
       }
+
+      return emojis
+    },
+
+    shareGameResult() {
+      const winLoseWord = this.isLocalPlayerWinner() ? 'Ganhei' : 'Perdi'
+
+      let message =
+        `${winLoseWord} do meu oponente no *Palavrinhas.com*\n` +
+        `A palavra era *${this.match.word}*, se liga no resultado:\n\n`
+
+      message += this.getGameResultEmojis('\n')
 
       message += '\nJogue também em https://palavrinhas.com'
       return message
