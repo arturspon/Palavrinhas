@@ -36,15 +36,29 @@
         :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
       >
         <p>
-          <b>{{ isLocalPlayerWinner() ? '😎 Parabéns, você ganhou!' : 'Você perdeu.' }}</b>
+          <b class="fs-5">
+            {{
+              isLocalPlayerWinner()
+                ? '😎 Parabéns, você ganhou!'
+                : 'Você perdeu.'
+            }}
+          </b>
           <br />
           <span>A palavra era: {{ match.word.toUpperCase() }}</span>
         </p>
-        <p v-if="!isLocalPlayerWinner()">Você perdeu, mas lembre-se, sempre há a próxima partida 😉</p>
+        <p v-if="!isLocalPlayerWinner()">
+          Lembre-se, sempre há a próxima partida 😉
+        </p>
 
-        <div>
-          <span>Seu resultado:</span>
-          <div v-html="getGameResultEmojis('<br>')"></div>
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+          <div>
+            <span>Seu resultado:</span>
+            <div v-html="getGameResultEmojis('<br>')"></div>
+          </div>
+          <div>
+            <span>Resultado do oponente:</span>
+            <div v-html="getGameResultEmojis('<br>', true)"></div>
+          </div>
         </div>
 
         <div class="mt-3">
@@ -124,67 +138,19 @@
         <div v-else class="game">
           <div class="grid">
             <div class="playerBoard">
-              <div class="card px-2">
-                <div class="card-body">
-                  <h2>Você</h2>
-                  <div class="player__grid pt-2">
-                    <div
-                      v-for="(row, rowIndex) of player.grid.rows"
-                      :key="rowIndex"
-                      class="letterRow animate__animated"
-                      :class="{'animate__shakeX': shakeInvalidWord && isCurrentRow(rowIndex)}"
-                    >
-                      <div
-                        v-for="(col, colIndex) of player.grid.cols"
-                        :key="colIndex"
-                        class="letterContainer animate__animated"
-                        :class="[
-                          getKeyClass(rowIndex, colIndex),
-                          getKeyClassForNonExistentWord(rowIndex),
-                          getKeyClassForCurrentRow(rowIndex),
-                          getKeyClassAnimationCurrentLetter(rowIndex, colIndex)
-                        ]"
-                      >
-                        <span
-                          v-if="
-                            player.guesses[rowIndex] &&
-                            player.guesses[rowIndex][colIndex]
-                          "
-                        >
-                          <b>{{
-                            player.guesses[rowIndex][colIndex].toUpperCase()
-                          }}</b>
-                        </span>
-                        <span v-else>&nbsp;</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <PlayerBoard
+                :grid="player.grid"
+                :matchWord="match.word"
+                :player="player"
+                :enemy="enemy"
+                :isCurrentGuessValidWord="isCurrentGuessValidWord"
+                :shakeInvalidWord="shakeInvalidWord"
+                :rerenderCount="rerenderCount"
+              />
             </div>
             <div class="d-md-none py-1"></div>
             <div class="enemyBoard">
-              <div class="card px-2">
-                <div class="card-body">
-                  <h2>Oponente</h2>
-                  <div class="player__grid pt-2">
-                    <div
-                      v-for="(row, rowIndex) of enemy.grid.rows"
-                      :key="rowIndex"
-                      class="letterRow"
-                    >
-                      <div
-                        v-for="(col, colIndex) of enemy.grid.cols"
-                        :key="colIndex"
-                        class="letterContainer"
-                        :class="getKeyClass(rowIndex, colIndex, true)"
-                      >
-                        &nbsp;
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <EnemyBoard :matchWord="match.word" :enemy="enemy" />
             </div>
           </div>
 
@@ -235,11 +201,24 @@
 <script>
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
-import { createMatch, rematch } from '@/services/match'
+import {
+  createMatch,
+  rematch,
+  isKeyCorrect,
+  isKeyInWord,
+} from '@/services/match'
+import PlayerBoard from '@/components/boards/PlayerBoard'
+import EnemyBoard from '@/components/boards/EnemyBoard'
 
 const saveToDbDebounceIntervalSeconds = 1
+const words = getAllPtBrWords()
 
 export default {
+  components: {
+    PlayerBoard,
+    EnemyBoard,
+  },
+
   data() {
     return {
       isLoading: {
@@ -247,8 +226,6 @@ export default {
         playAnotherMatchAnotherEnemy: false,
         playAnotherMatchSameEnemy: false,
       },
-
-      words: [],
 
       isHost: true,
       localPlayerId: null,
@@ -273,11 +250,6 @@ export default {
         },
         currentRow: 0,
         guesses: [],
-        keyStats: {
-          right: [],
-          halfRight: [],
-          wrong: [],
-        },
       },
 
       enemy: {
@@ -294,14 +266,15 @@ export default {
         ['z', 'x', 'c', 'v', 'b', 'n', 'm', 'DEL', '✔'],
       ],
       overrideKeyMap: {
-        'ç': 'c',
+        ç: 'c',
       },
       keyStatuses: {},
+
+      rerenderCount: 0,
     }
   },
 
   created() {
-    this.words = getAllPtBrWords()
     this.matchId = this.$route.params.gameId
     this.getLocalPlayerId()
     this.loadMatch()
@@ -404,6 +377,7 @@ export default {
 
       const row = this.getCurrentRow()
       row.push(key)
+      this.rerenderCount++
 
       this.saveToDbWithDebounce()
       this.$forceUpdate()
@@ -438,6 +412,7 @@ export default {
 
       this.$forceUpdate()
       this.saveToDbWithDebounce()
+      this.rerenderCount++
     },
 
     isRowConfirmed(rowIndex) {
@@ -455,7 +430,7 @@ export default {
     },
 
     isValidWord(word) {
-      return this.words.indexOf(word) !== -1
+      return words.indexOf(word) !== -1
     },
 
     confirmGuess() {
@@ -474,7 +449,7 @@ export default {
 
           setTimeout(() => {
             this.shakeInvalidWord = false
-          }, 1000);
+          }, 1000)
         })
 
         this.$swal({
@@ -519,47 +494,15 @@ export default {
         return
       }
 
-      return this.isKeyCorrect(key, colIndex)
+      return isKeyCorrect(this.match.word, key, colIndex)
         ? 'bg-success text-white'
-        : this.isKeyInWord(key)
+        : isKeyInWord(this.match.word, key)
         ? 'bg-warning'
         : 'bg-danger text-white'
     },
 
-    getKeyClassForNonExistentWord(rowIndex) {
-      if (this.player.currentRow == rowIndex && !this.isCurrentGuessValidWord) {
-        return 'letterContainer--invalidWord'
-      }
-    },
-
     isCurrentRow(rowIndex) {
       return rowIndex == this.player.currentRow
-    },
-
-    getKeyClassForCurrentRow(rowIndex) {
-      const isCurrentRow = this.isCurrentRow(rowIndex)
-      return isCurrentRow && 'letterContainer--currentRow'
-    },
-
-    getKeyClassAnimationCurrentLetter(rowIndex, colIndex) {
-      if (!this.player.guesses || !Array.isArray(this.player.guesses) || this.player.guesses.length == 0) {
-        return
-      }
-
-      const index = this.player.guesses.length == 0 ? 0 : (this.player.guesses.length - 1)
-      const row = this.player.guesses[index]
-
-      if (!row || !Array.isArray(row)) {
-        return
-      }
-
-      const isCurrentCol = row.length == colIndex + 1
-
-      if (!this.isCurrentRow(rowIndex) || !isCurrentCol) {
-        return
-      }
-
-      return 'animate__bounceIn'
     },
 
     getKeyboardKeyClass(key) {
@@ -589,21 +532,13 @@ export default {
         }
 
         for (const [colIndex, key] of row.entries()) {
-          this.keyStatuses[key] = this.isKeyCorrect(key, colIndex)
+          this.keyStatuses[key] = isKeyCorrect(this.match.word, key, colIndex)
             ? 'right'
-            : this.isKeyInWord(key)
+            : isKeyInWord(this.match.word, key)
             ? 'halfRight'
             : 'wrong'
         }
       }
-    },
-
-    isKeyCorrect(key, keyIndex) {
-      return this.match.word.charAt(keyIndex) == key
-    },
-
-    isKeyInWord(key) {
-      return this.match.word.indexOf(key) !== -1
     },
 
     setInitialDataToDb() {
@@ -706,17 +641,18 @@ export default {
       return `https://api.whatsapp.com/send?text=${encodedText}`
     },
 
-    getGameResultEmojis(lineBreakCharacter) {
+    getGameResultEmojis(lineBreakCharacter, fromEnemy) {
+      const player = fromEnemy ? this.enemy : this.player
       let emojis = ''
 
-      for (let rowIndex = 0; rowIndex < this.player.grid.rows; rowIndex++) {
-        for (let colIndex = 0; colIndex < this.player.grid.cols; colIndex++) {
-          const key = this.player.guesses?.[rowIndex]?.[colIndex]
+      for (let rowIndex = 0; rowIndex < player.grid.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < player.grid.cols; colIndex++) {
+          const key = player.guesses?.[rowIndex]?.[colIndex]
           emojis += !key
             ? '⬜'
-            : this.isKeyCorrect(key, colIndex)
+            : isKeyCorrect(this.match.word, key, colIndex)
             ? '🟩'
-            : this.isKeyInWord(key)
+            : isKeyInWord(this.match.word, key)
             ? '🟨'
             : '🟥'
         }
@@ -861,6 +797,7 @@ export default {
 
   .keyboard__letter {
     padding: 0.5rem;
+    min-width: 25px;
   }
 
   .playerBoard {

@@ -1,14 +1,20 @@
 <template>
   <div id="app">
-    <!-- <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav> -->
+    <DefaultNavbar v-if="$route.name != 'home'" />
     <div>
       <router-view/>
     </div>
   </div>
 </template>
+
+<script>
+import DefaultNavbar from '@/components/layout/DefaultNavbar'
+export default {
+  components: {
+    DefaultNavbar,
+  },
+}
+</script>
 
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Fredoka&display=swap');
