@@ -86,3 +86,11 @@ export const rematch = async (db, matchDocRef, matchData) => {
 
   return newMatchDocRef
 }
+
+export const isKeyCorrect = (matchWord, key, keyIndex) => {
+  return matchWord.charAt(keyIndex) == key
+}
+
+export const isKeyInWord = (matchWord, key) => {
+  return matchWord.indexOf(key) !== -1
+}
