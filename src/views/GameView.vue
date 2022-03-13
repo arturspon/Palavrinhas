@@ -142,7 +142,6 @@
                 :grid="player.grid"
                 :matchWord="match.word"
                 :player="player"
-                :enemy="enemy"
                 :isCurrentGuessValidWord="isCurrentGuessValidWord"
                 :shakeInvalidWord="shakeInvalidWord"
                 :rerenderCount="rerenderCount"
@@ -159,36 +158,23 @@
               <div class="card-body">
                 <div class="d-flex justify-content-center gap-2 mb-3">
                   <button
-                    class="btn btn-outline-danger"
+                    class="btn btn-outline-danger btn-sm"
                     @click="deleteLastKey()"
                   >
                     Apagar última letra
                   </button>
                   <button
-                    class="btn btn-outline-success"
+                    class="btn btn-outline-success btn-sm"
                     @click="confirmGuess()"
                     :disabled="!isCurrentRowFull()"
                   >
                     Confimar
                   </button>
                 </div>
-                <div>
-                  <div
-                    v-for="(keyRow, index) of keyboard"
-                    :key="index"
-                    class="d-flex justify-content-center gap-1 mb-1"
-                  >
-                    <button
-                      v-for="keyLetter of keyRow"
-                      :key="keyLetter"
-                      class="btn btn-outline-secondary btn-sm keyboard__letter"
-                      :class="getKeyboardKeyClass(keyLetter)"
-                      @click="onKeyPress(keyLetter)"
-                    >
-                      {{ keyLetter.toUpperCase() }}
-                    </button>
-                  </div>
-                </div>
+                <GameKeyboard
+                  @keyPress="onKeyPress"
+                  :keyStatuses="keyStatuses"
+                />
               </div>
             </div>
           </div>
@@ -209,6 +195,7 @@ import {
 } from '@/services/match'
 import PlayerBoard from '@/components/boards/PlayerBoard'
 import EnemyBoard from '@/components/boards/EnemyBoard'
+import GameKeyboard from '@/components/game/GameKeyboard'
 
 const saveToDbDebounceIntervalSeconds = 1
 const words = getAllPtBrWords()
@@ -217,6 +204,7 @@ export default {
   components: {
     PlayerBoard,
     EnemyBoard,
+    GameKeyboard,
   },
 
   data() {
@@ -260,14 +248,6 @@ export default {
         guesses: [],
       },
 
-      keyboard: [
-        ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-        ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç'],
-        ['z', 'x', 'c', 'v', 'b', 'n', 'm', 'DEL', '✔'],
-      ],
-      overrideKeyMap: {
-        ç: 'c',
-      },
       keyStatuses: {},
 
       rerenderCount: 0,
@@ -278,7 +258,6 @@ export default {
     this.matchId = this.$route.params.gameId
     this.getLocalPlayerId()
     this.loadMatch()
-    this.attachKeyboardListener()
   },
 
   methods: {
@@ -330,7 +309,7 @@ export default {
 
       this.validateCurrentPlayer()
       this.confirmGuess()
-      this.attachDbListener()
+      // this.attachDbListener()
       this.setInitialDataToDb()
 
       this.isLoading.match = false
@@ -342,38 +321,36 @@ export default {
         this.match[this.getPlayerKey()].id != this.localPlayerId
     },
 
-    attachKeyboardListener() {
-      const validLetterKeys = this.keyboard.reduce(
-        (carry, keyboardRow) => [...carry, ...keyboardRow],
-        []
-      )
+    // attachKeyboardListener() {
+    //   const validLetterKeys = this.keyboard.reduce(
+    //     (carry, keyboardRow) => [...carry, ...keyboardRow],
+    //     []
+    //   )
 
-      document.addEventListener('keydown', (event) => {
-        const pressedKey = event.key.toLowerCase()
+    //   document.addEventListener('keydown', (event) => {
+    //     const pressedKey = event.key.toLowerCase()
 
-        if (pressedKey == 'backspace') {
-          return this.deleteLastKey()
-        } else if (pressedKey == 'enter') {
-          return this.confirmGuess()
-        }
+    //     if (pressedKey == 'backspace') {
+    //       return this.deleteLastKey()
+    //     } else if (pressedKey == 'enter') {
+    //       return this.confirmGuess()
+    //     }
 
-        const isValidKey = validLetterKeys.includes(pressedKey)
-        if (isValidKey) {
-          this.onKeyPress(pressedKey)
-        }
-      })
-    },
+    //     const isValidKey = validLetterKeys.includes(pressedKey)
+    //     if (isValidKey) {
+    //       this.onKeyPress(pressedKey)
+    //     }
+    //   })
+    // },
 
     onKeyPress(key) {
-      if (key == '✔') {
+      if (key == '✔' || key == 'enter') {
         return this.confirmGuess()
-      } else if (key == 'DEL') {
+      } else if (key == 'DEL' || key == 'backspace') {
         return this.deleteLastKey()
       } else if (this.isPlayerGridFull() || this.isCurrentRowFull()) {
         return
       }
-
-      key = this.overrideKeyMap[key] || key
 
       const row = this.getCurrentRow()
       row.push(key)
@@ -632,7 +609,7 @@ export default {
     },
 
     getShareLink() {
-      const text = `Venha me enfrentar no Palavreando: ${window.location.href}`
+      const text = `Venha me enfrentar no Palavrinhas: ${window.location.href}`
       return this.buildWhatsAppUrl(text)
     },
 

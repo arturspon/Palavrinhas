@@ -6616,6 +6616,7 @@ const words = [
   'tredo',
   'trefe',
   'trefo',
+  'trema',
   'treme',
   'trens',
   'trepa',
