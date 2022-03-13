@@ -1,6 +1,6 @@
 <template>
   <div class="card px-2">
-    <div class="card-body">
+    <div class="card-body boardContent">
       <h2>Oponente</h2>
       <div class="pt-2">
         <div
@@ -27,7 +27,7 @@ import { isKeyCorrect, isKeyInWord } from '@/services/match'
 
 export default {
   props: {
-    match: Object,
+    matchWord: String,
     enemy: Object,
   },
 
@@ -39,9 +39,9 @@ export default {
         return
       }
 
-      return isKeyCorrect(this.match, key, colIndex)
+      return isKeyCorrect(this.matchWord, key, colIndex)
         ? 'bg-success text-white'
-        : isKeyInWord(this.match, key)
+        : isKeyInWord(this.matchWord, key)
         ? 'bg-warning'
         : 'bg-danger text-white'
     },
@@ -83,6 +83,12 @@ export default {
 
   .letterContainer {
     padding: 0rem 0.6em;
+  }
+
+  .boardContent {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   }
 }
 </style>

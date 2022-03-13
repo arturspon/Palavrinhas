@@ -1,6 +1,6 @@
 <template>
   <div class="card px-2">
-    <div class="card-body">
+    <div class="card-body boardContent">
       <h2>Você</h2>
       <div class="pt-2">
         <div
@@ -155,6 +155,12 @@ export default {
 
   .letterContainer {
     padding: 0rem 0.6em;
+  }
+
+  .boardContent {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   }
 }
 </style>

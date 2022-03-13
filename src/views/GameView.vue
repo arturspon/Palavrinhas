@@ -36,19 +36,29 @@
         :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
       >
         <p>
-          <b>{{
-            isLocalPlayerWinner() ? '😎 Parabéns, você ganhou!' : 'Você perdeu.'
-          }}</b>
+          <b class="fs-5">
+            {{
+              isLocalPlayerWinner()
+                ? '😎 Parabéns, você ganhou!'
+                : 'Você perdeu.'
+            }}
+          </b>
           <br />
           <span>A palavra era: {{ match.word.toUpperCase() }}</span>
         </p>
         <p v-if="!isLocalPlayerWinner()">
-          Você perdeu, mas lembre-se, sempre há a próxima partida 😉
+          Lembre-se, sempre há a próxima partida 😉
         </p>
 
-        <div>
-          <span>Seu resultado:</span>
-          <div v-html="getGameResultEmojis('<br>')"></div>
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+          <div>
+            <span>Seu resultado:</span>
+            <div v-html="getGameResultEmojis('<br>')"></div>
+          </div>
+          <div>
+            <span>Resultado do oponente:</span>
+            <div v-html="getGameResultEmojis('<br>', true)"></div>
+          </div>
         </div>
 
         <div class="mt-3">
@@ -140,31 +150,7 @@
             </div>
             <div class="d-md-none py-1"></div>
             <div class="enemyBoard">
-              <EnemyBoard
-                :match="match"
-                :enemy="enemy"
-              />
-              <!-- <div class="card px-2">
-                <div class="card-body">
-                  <h2>Oponente</h2>
-                  <div class="pt-2">
-                    <div
-                      v-for="(row, rowIndex) of enemy.grid.rows"
-                      :key="rowIndex"
-                      class="letterRow"
-                    >
-                      <div
-                        v-for="(col, colIndex) of enemy.grid.cols"
-                        :key="colIndex"
-                        class="letterContainer"
-                        :class="getKeyClass(rowIndex, colIndex, true)"
-                      >
-                        &nbsp;
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
+              <EnemyBoard :matchWord="match.word" :enemy="enemy" />
             </div>
           </div>
 
@@ -215,7 +201,12 @@
 <script>
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
-import { createMatch, rematch, isKeyCorrect, isKeyInWord } from '@/services/match'
+import {
+  createMatch,
+  rematch,
+  isKeyCorrect,
+  isKeyInWord,
+} from '@/services/match'
 import PlayerBoard from '@/components/boards/PlayerBoard'
 import EnemyBoard from '@/components/boards/EnemyBoard'
 
@@ -650,12 +641,13 @@ export default {
       return `https://api.whatsapp.com/send?text=${encodedText}`
     },
 
-    getGameResultEmojis(lineBreakCharacter) {
+    getGameResultEmojis(lineBreakCharacter, fromEnemy) {
+      const player = fromEnemy ? this.enemy : this.player
       let emojis = ''
 
-      for (let rowIndex = 0; rowIndex < this.player.grid.rows; rowIndex++) {
-        for (let colIndex = 0; colIndex < this.player.grid.cols; colIndex++) {
-          const key = this.player.guesses?.[rowIndex]?.[colIndex]
+      for (let rowIndex = 0; rowIndex < player.grid.rows; rowIndex++) {
+        for (let colIndex = 0; colIndex < player.grid.cols; colIndex++) {
+          const key = player.guesses?.[rowIndex]?.[colIndex]
           emojis += !key
             ? '⬜'
             : isKeyCorrect(this.match.word, key, colIndex)
@@ -805,6 +797,7 @@ export default {
 
   .keyboard__letter {
     padding: 0.5rem;
+    min-width: 25px;
   }
 
   .playerBoard {
