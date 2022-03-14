@@ -1,4 +1,12 @@
-import { collection, addDoc, setDoc, Timestamp } from 'firebase/firestore'
+import {
+  collection,
+  addDoc,
+  setDoc,
+  Timestamp,
+  arrayUnion,
+  updateDoc,
+  doc,
+} from 'firebase/firestore'
 import { getRandomWord } from '@/utils/words'
 
 const uuidv4 = () => {
@@ -70,10 +78,7 @@ export const rematch = async (db, matchDocRef, matchData) => {
     isRematchAccepted: false,
   }
 
-  const newMatchDocRef = await createMatch(
-    db,
-    newMatchData,
-  )
+  const newMatchDocRef = await createMatch(db, newMatchData)
 
   await setDoc(
     matchDocRef,
@@ -93,4 +98,11 @@ export const isKeyCorrect = (matchWord, key, keyIndex) => {
 
 export const isKeyInWord = (matchWord, key) => {
   return matchWord.indexOf(key) !== -1
+}
+
+export const saveInvalidWordToDb = async (db, word) => {
+  const invalidWordsDocRef = doc(db, 'stats', 'invalidWords-pt_BR')
+  await updateDoc(invalidWordsDocRef, {
+    data: arrayUnion(word),
+  })
 }

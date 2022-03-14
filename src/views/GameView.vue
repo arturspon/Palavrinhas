@@ -206,6 +206,7 @@ import {
   rematch,
   isKeyCorrect,
   isKeyInWord,
+  saveInvalidWordToDb,
 } from '@/services/match'
 import PlayerBoard from '@/components/boards/PlayerBoard'
 import EnemyBoard from '@/components/boards/EnemyBoard'
@@ -451,6 +452,8 @@ export default {
             this.shakeInvalidWord = false
           }, 1000)
         })
+
+        saveInvalidWordToDb(this.$db, guessWord)
 
         this.$swal({
           toast: true,
