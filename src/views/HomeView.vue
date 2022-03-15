@@ -1,13 +1,24 @@
 <template>
   <div class="home vh-100 d-flex align-items-center justify-content-center">
-    <div class="card">
+    <div class="card w-25">
       <div class="card-body p-5">
-        <img src="assets/favicons/android-chrome-192x192.png" alt="Logo do Palavrinhas.com" height="100">
+        <img
+          src="assets/favicons/android-chrome-192x192.png"
+          alt="Logo do Palavrinhas.com"
+          height="100"
+        />
         <h1>Palavrinhas</h1>
 
-        <div class="mt-5">
-          <button
+        <div class="mt-5 d-flex flex-column gap-2">
+          <router-link
+            :to="{ name: 'sp-game' }"
             class="btn btn-primary btn-lg w-100"
+          >
+            JOGAR SOZINHO
+          </router-link>
+
+          <button
+            class="btn btn-info btn-lg w-100"
             :disabled="isLoading.gameCreation"
             @click="play()"
           >
@@ -19,17 +30,15 @@
               ></span>
               <span class="visually-hidden">Carregando...</span>
             </template>
-            <template v-else>JOGAR</template>
+            <template v-else>JOGAR COM AMIGOS</template>
           </button>
-        </div>
 
-        <div class="mt-2">
           <button
             class="btn btn-warning btn-lg w-100"
             data-bs-toggle="modal"
             data-bs-target="#how-to-play-modal"
           >
-            COMO JOGAR
+            REGRAS
           </button>
         </div>
       </div>
@@ -68,7 +77,7 @@ export default {
         name: 'game',
         params: {
           gameId: docRef.id,
-        }
+        },
       })
     },
   },

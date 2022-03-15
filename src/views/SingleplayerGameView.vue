@@ -1,29 +1,70 @@
 <template>
   <div class="container mt-2">
-    <PlayerBoard
-      :grid="player.grid"
-      :matchWord="word"
-      :player="player"
-      :isCurrentGuessValidWord="isCurrentGuessValidWord"
-      :shakeInvalidWord="shakeInvalidWord"
-      :rerenderCount="rerenderCount"
-      :title="null"
-    />
-    <div class="card mt-2">
-      <div class="card-body">
-        <div class="d-flex justify-content-center gap-2 mb-3">
-          <button class="btn btn-outline-danger btn-sm" @click="deleteLastKey()">
-            Apagar última letra
-          </button>
-          <button
-            class="btn btn-outline-success btn-sm"
-            @click="confirmGuess()"
-            :disabled="!isCurrentRowFull()"
-          >
-            Confimar
-          </button>
+    <div v-if="isWinner !== null" class="gameResult">
+      <div class="alert" :class="[isWinner ? 'alert-success' : 'alert-danger']">
+        <p>
+          <b class="fs-5">
+            {{ isWinner ? '😎 Parabéns, você ganhou!' : 'Você perdeu.' }}
+          </b>
+          <br />
+          <span>A palavra era: {{ word.toUpperCase() }}</span>
+        </p>
+        <p v-if="!isWinner">Lembre-se, sempre há a próxima partida 😉</p>
+
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+          <div>
+            <span>Seu resultado:</span>
+            <div v-html="getGameResultEmojisText('<br>')"></div>
+          </div>
         </div>
-        <GameKeyboard @keyPress="onKeyPress" :keyStatuses="keyStatuses" />
+
+        <div class="mt-4 d-flex flex-column align-items-center gap-1">
+          <button class="btn btn-primary" @click="rematch()">
+            Jogar de novo
+          </button>
+          <a
+            :href="getUrlToShareGameResultWhatsApp()"
+            class="btn btn-success"
+            target="_blank"
+          >
+            Compartilhar seu resultado no WhatsApp
+          </a>
+          <router-link :to="{ name: 'home' }" class="btn btn-secondary">
+            Voltar para a página inicial
+          </router-link>
+        </div>
+      </div>
+    </div>
+
+    <div v-else>
+      <PlayerBoard
+        :grid="player.grid"
+        :matchWord="word"
+        :player="player"
+        :isCurrentGuessValidWord="isCurrentGuessValidWord"
+        :shakeInvalidWord="shakeInvalidWord"
+        :rerenderCount="rerenderCount"
+        :title="null"
+      />
+      <div class="card mt-2">
+        <div class="card-body">
+          <div class="d-flex justify-content-center gap-2 mb-3">
+            <button
+              class="btn btn-outline-danger btn-sm"
+              @click="deleteLastKey()"
+            >
+              Apagar última letra
+            </button>
+            <button
+              class="btn btn-outline-success btn-sm"
+              @click="confirmGuess()"
+              :disabled="!isCurrentRowFull()"
+            >
+              Confimar
+            </button>
+          </div>
+          <GameKeyboard @keyPress="onKeyPress" :keyStatuses="keyStatuses" />
+        </div>
       </div>
     </div>
   </div>
@@ -35,8 +76,14 @@ import { getRandomWord } from '@/utils/words'
 import { isKeyCorrect, isKeyInWord } from '@/services/match'
 import PlayerBoard from '@/components/boards/PlayerBoard'
 import GameKeyboard from '@/components/game/GameKeyboard'
+import {
+  getGameResultEmojis,
+  getUrlGameResultWhatsApp,
+} from '@/utils/ShareUtils'
 
 const words = getAllPtBrWords()
+
+const LOCAL_STORAGE_GAME_DATA_KEY = 'spGameData'
 
 export default {
   components: {
@@ -57,6 +104,8 @@ export default {
         guesses: [],
       },
 
+      isWinner: null,
+
       isCurrentGuessValidWord: true,
       shakeInvalidWord: false,
       rerenderCount: 0,
@@ -66,10 +115,37 @@ export default {
   },
 
   created() {
-    this.word = getRandomWord()
+    this.init()
   },
 
   methods: {
+    init() {
+      const savedGameRawData = localStorage.getItem(LOCAL_STORAGE_GAME_DATA_KEY)
+
+      if (!savedGameRawData) {
+        this.word = getRandomWord()
+        return
+      }
+
+      const savedGameData = JSON.parse(savedGameRawData)
+      this.word = savedGameData.word
+      this.player = savedGameData.player
+      this.isWinner = savedGameData.isWinner
+      this.keyStatuses = savedGameData.keyStatuses
+
+      this.confirmGuess()
+    },
+
+    saveGame() {
+      const jsonData = JSON.stringify({
+        word: this.word,
+        player: this.player,
+        isWinner: this.isWinner,
+        keyStatuses: this.keyStatuses,
+      })
+      localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, jsonData)
+    },
+
     onKeyPress(key) {
       if (key == '✔' || key == 'enter') {
         return this.confirmGuess()
@@ -82,6 +158,8 @@ export default {
       const row = this.getCurrentRow()
       row.push(key)
       this.rerenderCount++
+
+      this.saveGame()
     },
 
     isPlayerGridFull() {
@@ -206,7 +284,21 @@ export default {
     },
 
     finishGame(isWinner) {
-      console.log({ isWinner })
+      this.isWinner = isWinner
+      this.saveGame()
+    },
+
+    getGameResultEmojisText(lineBreakCharacter) {
+      return getGameResultEmojis(this.player, this.word, lineBreakCharacter)
+    },
+
+    getUrlToShareGameResultWhatsApp() {
+      return getUrlGameResultWhatsApp(this.player, this.word, this.isWinner)
+    },
+
+    rematch() {
+      localStorage.removeItem(LOCAL_STORAGE_GAME_DATA_KEY)
+      this.$router.go()
     },
   },
 }
@@ -215,5 +307,11 @@ export default {
 <style scoped>
 .card {
   background-color: #eeeeee;
+}
+.gameResult {
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

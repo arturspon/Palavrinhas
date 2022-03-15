@@ -916,8 +916,6 @@ const words = [
   'farto',
   'sugar',
   'forro',
-  'staff',
-  'puído',
   'refil',
   'bedel',
   'dança',
