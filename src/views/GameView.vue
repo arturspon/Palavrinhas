@@ -345,7 +345,7 @@ export default {
     onKeyPress(key) {
       if (key == '✔' || key == 'enter') {
         return this.confirmGuess()
-      } else if (key == 'DEL' || key == 'backspace') {
+      } else if (key == 'del' || key == 'backspace') {
         return this.deleteLastKey()
       } else if (this.isPlayerGridFull() || this.isCurrentRowFull()) {
         return
