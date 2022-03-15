@@ -1,7 +1,7 @@
 <template>
   <div class="card px-2">
     <div class="card-body boardContent">
-      <h2>Você</h2>
+      <h2 v-if="title">{{ title }}</h2>
       <div class="pt-2">
         <div
           v-for="(row, rowIndex) of grid.rows"
@@ -45,10 +45,14 @@ export default {
     grid: Object,
     matchWord: String,
     player: Object,
-    enemy: Object,
     isCurrentGuessValidWord: Boolean,
     shakeInvalidWord: Boolean,
     rerenderCount: Number,
+    title: {
+      type: String,
+      required: false,
+      default: 'Você',
+    }
   },
 
   watch: {

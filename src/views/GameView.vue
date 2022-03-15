@@ -30,109 +30,129 @@
         </div>
       </div>
 
-      <div
-        v-else-if="match && match.winner"
-        class="alert"
-        :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
-      >
-        <p>
-          <b class="fs-5">
-            {{
-              isLocalPlayerWinner()
-                ? '😎 Parabéns, você ganhou!'
-                : 'Você perdeu.'
-            }}
-          </b>
-          <br />
-          <span>A palavra era: {{ match.word.toUpperCase() }}</span>
-        </p>
-        <p v-if="!isLocalPlayerWinner()">
-          Lembre-se, sempre há a próxima partida 😉
-        </p>
+      <div v-else-if="match && match.winner" class="vh-90 d-flex justify-content-center align-items-center">
+        <div
+          class="alert"
+          :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
+        >
+          <p>
+            <b class="fs-5">
+              {{
+                isLocalPlayerWinner()
+                  ? '😎 Parabéns, você ganhou!'
+                  : 'Você perdeu.'
+              }}
+            </b>
+            <br />
+            <span>A palavra era: {{ match.word.toUpperCase() }}</span>
+          </p>
+          <p v-if="!isLocalPlayerWinner()">
+            Lembre-se, sempre há a próxima partida 😉
+          </p>
 
-        <div class="d-flex justify-content-center flex-wrap gap-3">
-          <div>
-            <span>Seu resultado:</span>
-            <div v-html="getGameResultEmojis('<br>')"></div>
+          <div class="d-flex justify-content-center flex-wrap gap-3">
+            <div>
+              <span>Seu resultado:</span>
+              <div v-html="getGameResultEmojis('<br>')"></div>
+            </div>
+            <div>
+              <span>Resultado do oponente:</span>
+              <div v-html="getGameResultEmojis('<br>', true)"></div>
+            </div>
           </div>
-          <div>
-            <span>Resultado do oponente:</span>
-            <div v-html="getGameResultEmojis('<br>', true)"></div>
+
+          <div class="mt-3">
+            <button
+              class="btn btn-primary"
+              @click="playAnotherMatch(false)"
+              :disabled="
+                isLoading.playAnotherMatchAnotherEnemy ||
+                isLoading.playAnotherMatchSameEnemy
+              "
+            >
+              <template v-if="isLoading.playAnotherMatchAnotherEnemy">
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Carregando...</span>
+              </template>
+              <template v-else>Jogar com outro oponente</template>
+            </button>
+
+            <br />
+
+            <button
+              class="btn btn-warning mt-1"
+              @click="playAnotherMatch(true)"
+              :disabled="
+                isLoading.playAnotherMatchSameEnemy ||
+                isLoading.playAnotherMatchAnotherEnemy
+              "
+            >
+              <template v-if="isLoading.playAnotherMatchSameEnemy">
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Carregando...</span>
+              </template>
+              <template v-else>Jogar com o mesmo oponente</template>
+            </button>
+
+            <br />
+
+            <a
+              :href="buildWhatsAppUrl(shareGameResult())"
+              class="btn btn-success mt-1"
+              target="_blank"
+            >
+              Compartilhar
+              {{ isLocalPlayerWinner() ? 'vitória' : 'resultado' }} no WhatsApp
+            </a>
           </div>
         </div>
 
-        <div class="mt-3">
-          <button
-            class="btn btn-primary"
-            @click="playAnotherMatch(false)"
-            :disabled="
-              isLoading.playAnotherMatchAnotherEnemy ||
-              isLoading.playAnotherMatchSameEnemy
-            "
-          >
-            <template v-if="isLoading.playAnotherMatchAnotherEnemy">
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              <span class="visually-hidden">Carregando...</span>
-            </template>
-            <template v-else>Jogar com outro oponente</template>
-          </button>
-
-          <br />
-
-          <button
-            class="btn btn-warning mt-1"
-            @click="playAnotherMatch(true)"
-            :disabled="
-              isLoading.playAnotherMatchSameEnemy ||
-              isLoading.playAnotherMatchAnotherEnemy
-            "
-          >
-            <template v-if="isLoading.playAnotherMatchSameEnemy">
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              <span class="visually-hidden">Carregando...</span>
-            </template>
-            <template v-else>Jogar com o mesmo oponente</template>
-          </button>
-
-          <br />
-
-          <a
-            :href="buildWhatsAppUrl(shareGameResult())"
-            class="btn btn-success mt-1"
-            target="_blank"
-          >
-            Compartilhar
-            {{ isLocalPlayerWinner() ? 'vitória' : 'resultado' }} no WhatsApp
-          </a>
-        </div>
       </div>
 
       <div v-else>
         <div
-          v-if="isWaitingEnemyJoinRematch()"
-          class="alert alert-secondary p-4"
+          v-if="isWaitingEnemyJoinRematch() || isWaitingEnemyJoin()"
+          class="vh-90 d-flex align-items-center justify-content-center"
         >
-          <p>Aguardando seu oponente aceitar seu pedido de novo jogo...</p>
-          <router-link :to="{ name: 'home' }" class="btn btn-outline-danger">
-            Cancelar e ir para página inicial
-          </router-link>
-        </div>
-        <div
-          v-else-if="isWaitingEnemyJoin()"
-          class="mt-4 alert alert-secondary p-4"
-        >
-          <p>Aguardando seu oponente entrar...</p>
-          <a :href="getShareLink()" target="_blank" class="btn btn-success">
-            Compartilhar link via WhatsApp
-          </a>
+          <div>
+            <div
+              v-if="isWaitingEnemyJoinRematch()"
+              class="alert alert-secondary p-4"
+            >
+              <p>Aguardando seu oponente aceitar seu pedido de novo jogo...</p>
+              <router-link
+                :to="{ name: 'home' }"
+                class="btn btn-outline-danger"
+              >
+                Cancelar e ir para página inicial
+              </router-link>
+            </div>
+            <div
+              v-else-if="isWaitingEnemyJoin()"
+              class="mt-4 alert alert-secondary p-4"
+            >
+              <p>
+                Aguardando seu oponente entrar...
+                <br />
+                Você precisa convidar seu amigo e pedir para ele entrar no link.
+              </p>
+              <a
+                :href="getShareLink()"
+                target="_blank"
+                class="btn btn-success btn-lg"
+              >
+                Compartilhar link no WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
 
         <div v-else class="game">
@@ -142,7 +162,6 @@
                 :grid="player.grid"
                 :matchWord="match.word"
                 :player="player"
-                :enemy="enemy"
                 :isCurrentGuessValidWord="isCurrentGuessValidWord"
                 :shakeInvalidWord="shakeInvalidWord"
                 :rerenderCount="rerenderCount"
@@ -159,36 +178,23 @@
               <div class="card-body">
                 <div class="d-flex justify-content-center gap-2 mb-3">
                   <button
-                    class="btn btn-outline-danger"
+                    class="btn btn-outline-danger btn-sm"
                     @click="deleteLastKey()"
                   >
                     Apagar última letra
                   </button>
                   <button
-                    class="btn btn-outline-success"
+                    class="btn btn-outline-success btn-sm"
                     @click="confirmGuess()"
                     :disabled="!isCurrentRowFull()"
                   >
                     Confimar
                   </button>
                 </div>
-                <div>
-                  <div
-                    v-for="(keyRow, index) of keyboard"
-                    :key="index"
-                    class="d-flex justify-content-center gap-1 mb-1"
-                  >
-                    <button
-                      v-for="keyLetter of keyRow"
-                      :key="keyLetter"
-                      class="btn btn-outline-secondary btn-sm keyboard__letter"
-                      :class="getKeyboardKeyClass(keyLetter)"
-                      @click="onKeyPress(keyLetter)"
-                    >
-                      {{ keyLetter.toUpperCase() }}
-                    </button>
-                  </div>
-                </div>
+                <GameKeyboard
+                  @keyPress="onKeyPress"
+                  :keyStatuses="keyStatuses"
+                />
               </div>
             </div>
           </div>
@@ -210,6 +216,7 @@ import {
 } from '@/services/match'
 import PlayerBoard from '@/components/boards/PlayerBoard'
 import EnemyBoard from '@/components/boards/EnemyBoard'
+import GameKeyboard from '@/components/game/GameKeyboard'
 
 const saveToDbDebounceIntervalSeconds = 1
 const words = getAllPtBrWords()
@@ -218,6 +225,7 @@ export default {
   components: {
     PlayerBoard,
     EnemyBoard,
+    GameKeyboard,
   },
 
   data() {
@@ -261,14 +269,6 @@ export default {
         guesses: [],
       },
 
-      keyboard: [
-        ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-        ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç'],
-        ['z', 'x', 'c', 'v', 'b', 'n', 'm', 'DEL', '✔'],
-      ],
-      overrideKeyMap: {
-        ç: 'c',
-      },
       keyStatuses: {},
 
       rerenderCount: 0,
@@ -279,7 +279,6 @@ export default {
     this.matchId = this.$route.params.gameId
     this.getLocalPlayerId()
     this.loadMatch()
-    this.attachKeyboardListener()
   },
 
   methods: {
@@ -343,38 +342,14 @@ export default {
         this.match[this.getPlayerKey()].id != this.localPlayerId
     },
 
-    attachKeyboardListener() {
-      const validLetterKeys = this.keyboard.reduce(
-        (carry, keyboardRow) => [...carry, ...keyboardRow],
-        []
-      )
-
-      document.addEventListener('keydown', (event) => {
-        const pressedKey = event.key.toLowerCase()
-
-        if (pressedKey == 'backspace') {
-          return this.deleteLastKey()
-        } else if (pressedKey == 'enter') {
-          return this.confirmGuess()
-        }
-
-        const isValidKey = validLetterKeys.includes(pressedKey)
-        if (isValidKey) {
-          this.onKeyPress(pressedKey)
-        }
-      })
-    },
-
     onKeyPress(key) {
-      if (key == '✔') {
+      if (key == '✔' || key == 'enter') {
         return this.confirmGuess()
-      } else if (key == 'DEL') {
+      } else if (key == 'del' || key == 'backspace') {
         return this.deleteLastKey()
       } else if (this.isPlayerGridFull() || this.isCurrentRowFull()) {
         return
       }
-
-      key = this.overrideKeyMap[key] || key
 
       const row = this.getCurrentRow()
       row.push(key)
@@ -535,11 +510,12 @@ export default {
         }
 
         for (const [colIndex, key] of row.entries()) {
-          this.keyStatuses[key] = isKeyCorrect(this.match.word, key, colIndex)
+          const statusText = isKeyCorrect(this.match.word, key, colIndex)
             ? 'right'
             : isKeyInWord(this.match.word, key)
             ? 'halfRight'
             : 'wrong'
+          this.$set(this.keyStatuses, key, statusText)
         }
       }
     },
@@ -635,7 +611,7 @@ export default {
     },
 
     getShareLink() {
-      const text = `Venha me enfrentar no Palavreando: ${window.location.href}`
+      const text = `Venha me enfrentar no Palavrinhas: ${window.location.href}`
       return this.buildWhatsAppUrl(text)
     },
 
@@ -779,10 +755,8 @@ export default {
   background-color: #eeeeee;
 }
 
-@media (min-width: 768px) {
-  /* .gameViewRoot {
-    height: 100vh;
-  } */
+.vh-90 {
+  height: 90vh;
 }
 
 @media (max-width: 700px) {
