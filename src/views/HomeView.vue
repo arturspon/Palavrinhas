@@ -1,6 +1,6 @@
 <template>
   <div class="home vh-100 d-flex align-items-center justify-content-center">
-    <div class="card w-25">
+    <div class="card">
       <div class="card-body p-5">
         <img
           src="assets/favicons/android-chrome-192x192.png"
@@ -83,3 +83,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+  .home > .card {
+    min-width: 25%;
+  }
+</style>

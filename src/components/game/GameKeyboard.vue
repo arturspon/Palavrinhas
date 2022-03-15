@@ -37,6 +37,14 @@ export default {
     }
   },
 
+  watch: {
+    keyStatuses: {
+      handler() {
+        this.$forceUpdate()
+      }
+    }
+  },
+
   created() {
     this.attachKeyboardListener()
   },

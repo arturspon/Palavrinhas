@@ -510,11 +510,12 @@ export default {
         }
 
         for (const [colIndex, key] of row.entries()) {
-          this.keyStatuses[key] = isKeyCorrect(this.match.word, key, colIndex)
+          const statusText = isKeyCorrect(this.match.word, key, colIndex)
             ? 'right'
             : isKeyInWord(this.match.word, key)
             ? 'halfRight'
             : 'wrong'
+          this.$set(this.keyStatuses, key, statusText)
         }
       }
     },

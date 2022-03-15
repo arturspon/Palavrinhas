@@ -19,8 +19,20 @@
         </div>
 
         <div class="mt-4 d-flex flex-column align-items-center gap-1">
-          <button class="btn btn-primary" @click="rematch()">
-            Jogar de novo
+          <button
+            class="btn btn-primary"
+            @click="rematch()"
+            :disabled="isLoading.rematch"
+          >
+            <template v-if="isLoading.rematch">
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span class="visually-hidden">Carregando...</span>
+            </template>
+            <template v-else>Jogar de novo</template>
           </button>
           <a
             :href="getUrlToShareGameResultWhatsApp()"
@@ -29,15 +41,20 @@
           >
             Compartilhar seu resultado no WhatsApp
           </a>
-          <router-link :to="{ name: 'home' }" class="btn btn-secondary">
+          <router-link
+            :to="{ name: 'home' }"
+            class="btn btn-secondary"
+            :disabled="isLoading.rematch"
+          >
             Voltar para a página inicial
           </router-link>
         </div>
       </div>
     </div>
 
-    <div v-else>
+    <div class="game" v-else>
       <PlayerBoard
+        class="playerBoard"
         :grid="player.grid"
         :matchWord="word"
         :player="player"
@@ -93,6 +110,10 @@ export default {
 
   data() {
     return {
+      isLoading: {
+        rematch: false,
+      },
+
       word: null,
 
       player: {
@@ -274,11 +295,12 @@ export default {
         }
 
         for (const [colIndex, key] of row.entries()) {
-          this.keyStatuses[key] = isKeyCorrect(this.word, key, colIndex)
+          const statusText = isKeyCorrect(this.word, key, colIndex)
             ? 'right'
             : isKeyInWord(this.word, key)
             ? 'halfRight'
             : 'wrong'
+          this.$set(this.keyStatuses, key, statusText)
         }
       }
     },
@@ -297,6 +319,7 @@ export default {
     },
 
     rematch() {
+      this.isLoading.rematch = true
       localStorage.removeItem(LOCAL_STORAGE_GAME_DATA_KEY)
       this.$router.go()
     },
@@ -305,6 +328,16 @@ export default {
 </script>
 
 <style scoped>
+@media (max-width: 700px) {
+  .game {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+  }
+  .playerBoard {
+    flex: 1;
+  }
+}
 .card {
   background-color: #eeeeee;
 }
