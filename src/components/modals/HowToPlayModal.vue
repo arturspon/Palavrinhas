@@ -102,4 +102,10 @@ export default {
   border: 1px solid black;
   border-radius: 8px;
 }
+
+@media (max-width: 700px) {
+  .letterContainer {
+    padding: 0rem 0.6em;
+  }
+}
 </style>
