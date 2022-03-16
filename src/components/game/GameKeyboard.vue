@@ -12,6 +12,15 @@
         :class="getKeyboardKeyClass(keyLetter)"
         @click="gameKeyboardOnKeyPress(keyLetter)"
       >
+        <!-- <template v-if="keyLetter == 'DEL'">
+          APAGAR
+        </template>
+        <template v-else-if="keyLetter == '✔'">
+          CONFIRMAR
+        </template>
+        <template v-else>
+          {{ keyLetter.toUpperCase() }}
+        </template> -->
         {{ keyLetter.toUpperCase() }}
       </button>
     </div>
@@ -29,7 +38,8 @@ export default {
       keyboard: [
         ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
         ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç'],
-        ['z', 'x', 'c', 'v', 'b', 'n', 'm', 'DEL', '✔'],
+        ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+        // ['DEL', '✔'],
       ],
       overrideKeyMap: {
         ç: 'c',
@@ -108,6 +118,11 @@ export default {
   .keyboard__letter {
     padding: 0.5rem;
     min-width: 25px;
+    flex: 1;
+  }
+
+  .flex-3 {
+    flex: 3;
   }
 }
 </style>

@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <DefaultNavbar v-if="$route.name != 'home'" />
-    <div>
+    <div v-if="$route.name != 'home'">
+      <DefaultNavbar />
+    </div>
+    <div :class="$route.name != 'home' ? 'mt-5 pt-2' : ''">
       <router-view/>
     </div>
   </div>

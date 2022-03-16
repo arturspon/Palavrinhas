@@ -2,8 +2,8 @@
   <div class="card">
     <div class="card-body boardContent">
       <h4 v-if="title" class="playerLabel">{{ title }}</h4>
-      <!-- <div class="d-flex flex-column h-100 w-100"> -->
-      <div class="pt-2">
+      <div class="d-flex flex-column h-100 w-100">
+      <!-- <div class="pt-2"> -->
       <!-- <div class="d-flex flex-column"> -->
         <div
           v-for="(row, rowIndex) of grid.rows"
@@ -133,15 +133,11 @@ export default {
 </script>
 
 <style scoped>
-/* .playerLabel {
-  transform: rotate(-90deg);
-} */
-
 .letterRow {
-  /* flex: 1; */
   display: flex;
   justify-content: center;
-  /* width: 100%; */
+  align-items: center;
+  width: 100%;
   gap: 0.75em;
   margin-bottom: 0.8rem;
 }
@@ -150,11 +146,6 @@ export default {
   padding: 1em 1.4rem;
   border: 1px solid black;
   border-radius: 8px;
-  /* flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1; */
 }
 
 .letterContainer--currentRow {
@@ -183,6 +174,17 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+  .boardContent > .d-flex {
+    justify-content: center;
+  }
+
+  .letterContainer {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
   }
 }
 </style>

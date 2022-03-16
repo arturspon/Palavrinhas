@@ -173,10 +173,10 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-center mt-2">
+          <div class="gameKeyboardContainer d-flex justify-content-center mt-2">
             <div class="card">
               <div class="card-body">
-                <div class="d-flex justify-content-center gap-2 mb-3">
+                <div class="d-flex justify-content-center gap-2 mb-2">
                   <button
                     class="btn btn-outline-danger btn-sm"
                     @click="deleteLastKey()"
@@ -775,6 +775,7 @@ export default {
   .keyboard__letter {
     padding: 0.5rem;
     min-width: 25px;
+    flex: 1;
   }
 
   .playerBoard {
@@ -786,6 +787,10 @@ export default {
   }
   .letterContainer {
     padding: 0rem 0.6em;
+  }
+
+  .gameKeyboardContainer, .gameKeyboardContainer > .card {
+    width: 100%;
   }
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-md">
-      <button
+      <router-link
         class="btn btn-secondary btn-sm"
-        @click="$router.go(-1)"
+        :to="{ name: 'home' }"
       >
         {{ '\u003C' }}
         <span class="ms-1">Voltar</span>
-      </button>
+      </router-link>
       <router-link
         class="navbar-brand me-0"
         :to="{ name: 'home' }"

@@ -1,8 +1,8 @@
 <template>
-  <div class="card px-2">
+  <div class="card">
     <div class="card-body boardContent">
-      <h2>Oponente</h2>
-      <div class="pt-2">
+      <h4>Oponente</h4>
+      <div>
         <div
           v-for="(row, rowIndex) of enemy.grid.rows"
           :key="rowIndex"
@@ -87,7 +87,7 @@ export default {
 
   .boardContent {
     display: flex;
-    justify-content: space-around;
+    flex-direction: column;
     align-items: center;
   }
 }

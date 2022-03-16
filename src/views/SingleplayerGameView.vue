@@ -53,7 +53,7 @@
     </div>
 
     <div class="game" v-else>
-      <PlayerBoard
+      <SinglePlayerBoard
         class="playerBoard"
         :grid="player.grid"
         :matchWord="word"
@@ -91,7 +91,7 @@
 import { getAllPtBrWords } from '@/utils/words'
 import { getRandomWord } from '@/utils/words'
 import { isKeyCorrect, isKeyInWord } from '@/services/match'
-import PlayerBoard from '@/components/boards/PlayerBoard'
+import SinglePlayerBoard from '@/components/boards/SinglePlayerBoard'
 import GameKeyboard from '@/components/game/GameKeyboard'
 import {
   getGameResultEmojis,
@@ -104,7 +104,7 @@ const LOCAL_STORAGE_GAME_DATA_KEY = 'spGameData'
 
 export default {
   components: {
-    PlayerBoard,
+    SinglePlayerBoard,
     GameKeyboard,
   },
 
