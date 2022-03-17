@@ -4,7 +4,7 @@
       <DefaultNavbar />
     </div>
     <div :class="$route.name != 'home' ? 'mt-5 pt-2' : ''">
-      <router-view/>
+      <router-view />
     </div>
   </div>
 </template>
@@ -14,6 +14,17 @@ import DefaultNavbar from '@/components/layout/DefaultNavbar'
 export default {
   components: {
     DefaultNavbar,
+  },
+
+  watch: {
+    $route(to, from) {
+      if (window?.ReactNativeWebView?.postMessage) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'routeUpdate',
+          data: to.name,
+        }))
+      }
+    },
   },
 }
 </script>
