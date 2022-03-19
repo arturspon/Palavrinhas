@@ -1,8 +1,8 @@
 <template>
   <div
-    class="gameViewRoot d-flex align-items-center justify-content-center py-3"
+    class="gameViewRoot d-flex align-items-center justify-content-center py-2"
   >
-    <div class="container-fluid">
+    <div class="container">
       <div
         v-if="isLoading.match"
         class="spinner-border text-white"
@@ -156,9 +156,10 @@
         </div>
 
         <div v-else class="game">
-          <div class="grid">
+          <div class="grid gap-2">
             <div class="playerBoard">
               <PlayerBoard
+                class="h-100"
                 :grid="player.grid"
                 :matchWord="match.word"
                 :player="player"
@@ -167,37 +168,17 @@
                 :rerenderCount="rerenderCount"
               />
             </div>
-            <div class="d-md-none py-1"></div>
+            <!-- <div class="d-md-none py-1"></div> -->
             <div class="enemyBoard">
-              <EnemyBoard :matchWord="match.word" :enemy="enemy" />
+              <EnemyBoard class="h-100" :matchWord="match.word" :enemy="enemy" />
             </div>
           </div>
 
-          <div class="gameKeyboardContainer d-flex justify-content-center mt-2">
-            <div class="card">
-              <div class="card-body">
-                <div class="d-flex justify-content-center gap-2 mb-2">
-                  <button
-                    class="btn btn-outline-danger btn-sm"
-                    @click="deleteLastKey()"
-                  >
-                    Apagar última letra
-                  </button>
-                  <button
-                    class="btn btn-outline-success btn-sm"
-                    @click="confirmGuess()"
-                    :disabled="!isCurrentRowFull()"
-                  >
-                    Confimar
-                  </button>
-                </div>
-                <GameKeyboard
-                  @keyPress="onKeyPress"
-                  :keyStatuses="keyStatuses"
-                />
-              </div>
-            </div>
-          </div>
+          <GameKeyboard
+            class="mt-2"
+            @keyPress="onKeyPress"
+            :keyStatuses="keyStatuses"
+          />
         </div>
       </div>
     </div>
@@ -646,7 +627,7 @@ export default {
 
       let message =
         `${winLoseWord} do meu oponente no *Palavrinhas.com*\n` +
-        `A palavra era *${this.match.word}*, se liga no resultado:\n\n`
+        `A palavra era *${this.match.word.toUpperCase()}*, se liga no resultado:\n\n`
 
       message += this.getGameResultEmojis('\n')
 
@@ -759,6 +740,10 @@ export default {
   height: 90vh;
 }
 
+.playerBoard, .enemyBoard {
+  flex: 1;
+}
+
 @media (max-width: 700px) {
   .grid {
     flex-flow: column-reverse;
@@ -775,10 +760,6 @@ export default {
   .keyboard__letter {
     padding: 0.5rem;
     min-width: 25px;
-    flex: 1;
-  }
-
-  .playerBoard {
     flex: 1;
   }
 

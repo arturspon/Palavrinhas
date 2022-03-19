@@ -2,6 +2,8 @@ import {
   isKeyCorrect,
   isKeyInWord,
 } from '@/services/match'
+import { getStopwatchData } from './SinglePlayerUtils'
+import { secondsToReadableTime } from './TimeUtils'
 
 export const getGameResultEmojis = (player, word, lineBreakCharacter) => {
   let emojis = ''
@@ -23,7 +25,7 @@ export const getGameResultEmojis = (player, word, lineBreakCharacter) => {
   return emojis
 }
 
-export const getUrlGameResultWhatsApp = (player, word, isWinner) => {
+export const getUrlGameResultWhatsApp = (player, word, isWinner, isSinglePlayerGame) => {
   const winLoseWord = isWinner ? 'Ganhei' : 'Perdi'
 
   let message =
@@ -31,6 +33,11 @@ export const getUrlGameResultWhatsApp = (player, word, isWinner) => {
     `A palavra era *${word.toUpperCase()}*, se liga no resultado:\n\n`
 
   message += getGameResultEmojis(player, word, '\n')
+
+  if (isSinglePlayerGame) {
+    const readableTime = secondsToReadableTime(getStopwatchData())
+    message += `\nTerminei a partida em ${readableTime}`
+  }
 
   message += '\nJogue também em https://palavrinhas.com'
   return buildWhatsAppUrl(message)
