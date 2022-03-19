@@ -53,6 +53,8 @@
     </div>
 
     <div class="game" v-else>
+      <StopWatch ref="stopwatch" class="mb-2" />
+
       <SinglePlayerBoard
         class="playerBoard"
         :grid="player.grid"
@@ -63,26 +65,12 @@
         :rerenderCount="rerenderCount"
         :title="null"
       />
-      <div class="card mt-2">
-        <div class="card-body">
-          <div class="d-flex justify-content-center gap-2 mb-3">
-            <button
-              class="btn btn-outline-danger btn-sm"
-              @click="deleteLastKey()"
-            >
-              Apagar última letra
-            </button>
-            <button
-              class="btn btn-outline-success btn-sm"
-              @click="confirmGuess()"
-              :disabled="!isCurrentRowFull()"
-            >
-              Confimar
-            </button>
-          </div>
-          <GameKeyboard @keyPress="onKeyPress" :keyStatuses="keyStatuses" />
-        </div>
-      </div>
+
+      <GameKeyboard
+        class="mt-2"
+        @keyPress="onKeyPress"
+        :keyStatuses="keyStatuses"
+      />
     </div>
   </div>
 </template>
@@ -93,19 +81,24 @@ import { getRandomWord } from '@/utils/words'
 import { isKeyCorrect, isKeyInWord } from '@/services/match'
 import SinglePlayerBoard from '@/components/boards/SinglePlayerBoard'
 import GameKeyboard from '@/components/game/GameKeyboard'
+import StopWatch from '@/components/game/StopWatch'
 import {
   getGameResultEmojis,
   getUrlGameResultWhatsApp,
 } from '@/utils/ShareUtils'
+import {
+  saveGameData,
+  getSavedGameData,
+  resetGameData,
+} from '@/utils/SinglePlayerUtils'
 
 const words = getAllPtBrWords()
-
-const LOCAL_STORAGE_GAME_DATA_KEY = 'spGameData'
 
 export default {
   components: {
     SinglePlayerBoard,
     GameKeyboard,
+    StopWatch,
   },
 
   data() {
@@ -141,14 +134,13 @@ export default {
 
   methods: {
     init() {
-      const savedGameRawData = localStorage.getItem(LOCAL_STORAGE_GAME_DATA_KEY)
+      const savedGameData = getSavedGameData()
 
-      if (!savedGameRawData) {
+      if (!savedGameData) {
         this.word = getRandomWord()
         return
       }
 
-      const savedGameData = JSON.parse(savedGameRawData)
       this.word = savedGameData.word
       this.player = savedGameData.player
       this.isWinner = savedGameData.isWinner
@@ -158,13 +150,12 @@ export default {
     },
 
     saveGame() {
-      const jsonData = JSON.stringify({
+      saveGameData({
         word: this.word,
         player: this.player,
         isWinner: this.isWinner,
         keyStatuses: this.keyStatuses,
       })
-      localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, jsonData)
     },
 
     onKeyPress(key) {
@@ -306,6 +297,7 @@ export default {
     },
 
     finishGame(isWinner) {
+      this.$refs.stopwatch.clearTimer()
       this.isWinner = isWinner
       this.saveGame()
     },
@@ -315,12 +307,17 @@ export default {
     },
 
     getUrlToShareGameResultWhatsApp() {
-      return getUrlGameResultWhatsApp(this.player, this.word, this.isWinner)
+      return getUrlGameResultWhatsApp(
+        this.player,
+        this.word,
+        this.isWinner,
+        true
+      )
     },
 
-    rematch() {
+    async rematch() {
       this.isLoading.rematch = true
-      localStorage.removeItem(LOCAL_STORAGE_GAME_DATA_KEY)
+      await resetGameData()
       this.$router.go()
     },
   },
