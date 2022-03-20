@@ -6,6 +6,7 @@ import {
   arrayUnion,
   updateDoc,
   doc,
+  runTransaction,
 } from 'firebase/firestore'
 import { getRandomWord } from '@/utils/words'
 
@@ -65,31 +66,64 @@ export const createMatch = async (db, dataOverride) => {
 }
 
 export const rematch = async (db, matchDocRef, matchData) => {
-  const newMatchData = {
-    host: {
-      id: matchData.host.id,
-      guesses: [],
-    },
-    enemy: {
-      id: matchData.enemy.id,
-      guesses: [],
-    },
-    parentMatchId: matchDocRef.id,
-    isRematchAccepted: false,
+  try {
+    console.log('pedindo rematch')
+    const newMatchDocRef = await runTransaction(db, async (transaction) => {
+      const currentMatchDoc = await transaction.get(matchDocRef)
+      const currentMatchData = currentMatchDoc.data()
+
+      if (currentMatchData.rematchId) {
+        const rematchDocRef = doc(db, 'matches', currentMatchData.rematchId)
+        return {
+          isCurrentPlayerOwnerOfRematch: false,
+          rematchDocRef,
+        }
+      }
+
+      const newMatchData = {
+        host: {
+          id: matchData.host.id,
+          guesses: [],
+        },
+        enemy: {
+          id: matchData.enemy.id,
+          guesses: [],
+        },
+        parentMatchId: matchDocRef.id,
+        isRematchAccepted: false,
+      }
+
+      const newMatchDocRef = await createMatch(db, newMatchData)
+
+      transaction.set(
+        matchDocRef,
+        {
+          rematchId: newMatchDocRef.id,
+          playerIdRematchRequester: getPlayerLocalId(),
+        },
+        { merge: true }
+      )
+
+      return {
+        isCurrentPlayerOwnerOfRematch: true,
+        rematchDocRef: newMatchDocRef,
+      }
+    });
+
+    if (!newMatchDocRef.isCurrentPlayerOwnerOfRematch) {
+      await updateDoc(
+        newMatchDocRef.rematchDocRef,
+        { isRematchAccepted: true },
+        { merge: true }
+      )
+    }
+
+    console.log("Transaction successfully committed!");
+    return newMatchDocRef.rematchDocRef
+  } catch (e) {
+    console.log("Transaction failed: ", e);
+    return null
   }
-
-  const newMatchDocRef = await createMatch(db, newMatchData)
-
-  await setDoc(
-    matchDocRef,
-    {
-      rematchId: newMatchDocRef.id,
-      playerIdRematchRequester: getPlayerLocalId(),
-    },
-    { merge: true }
-  )
-
-  return newMatchDocRef
 }
 
 export const isKeyCorrect = (matchWord, key, keyIndex) => {

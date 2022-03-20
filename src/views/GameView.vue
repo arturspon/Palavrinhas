@@ -99,7 +99,8 @@
                 ></span>
                 <span class="visually-hidden">Carregando...</span>
               </template>
-              <template v-else>Jogar com o mesmo oponente</template>
+              <template v-else-if="isLocalPlayerWinner()">Jogar com o mesmo oponente</template>
+              <template v-else>Pedir revanche</template>
             </button>
 
             <br />
@@ -664,15 +665,15 @@ export default {
         confirmButtonText: 'Aceitar',
         cancelButtonText: 'Cancelar',
       }).then(async (result) => {
-        const rematchDocRef = doc(this.$db, 'matches', this.match.rematchId)
-
-        await updateDoc(
-          rematchDocRef,
-          { isRematchAccepted: true },
-          { merge: true }
-        )
-
         if (result.isConfirmed) {
+          const rematchDocRef = doc(this.$db, 'matches', this.match.rematchId)
+
+          await updateDoc(
+            rematchDocRef,
+            { isRematchAccepted: true },
+            { merge: true }
+          )
+
           this.$router.replace({
             name: 'game',
             params: {
