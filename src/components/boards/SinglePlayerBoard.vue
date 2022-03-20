@@ -77,9 +77,11 @@ export default {
         return
       }
 
+      const userWordAttempt = this.player.guesses[rowIndex]
+
       return isKeyCorrect(this.matchWord, key, colIndex)
         ? 'bg-success text-white'
-        : isKeyInWord(this.matchWord, key)
+        : isKeyInWord(this.matchWord, key, colIndex, userWordAttempt)
         ? 'bg-warning'
         : 'bg-danger text-white'
     },

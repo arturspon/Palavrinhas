@@ -96,8 +96,44 @@ export const isKeyCorrect = (matchWord, key, keyIndex) => {
   return matchWord.charAt(keyIndex) == key
 }
 
-export const isKeyInWord = (matchWord, key) => {
-  return matchWord.indexOf(key) !== -1
+export const isKeyInWord = (matchWord, key, keyIndex, attemptedWord) => {
+  const isKeyPresentInWord = matchWord.indexOf(key) !== -1
+
+  if (!keyIndex && !attemptedWord) return isKeyPresentInWord
+
+  const matchWordCharacters = matchWord.split('')
+
+  const correctKeyCountInUserAttempt = attemptedWord
+    .reduce((carry, char, charIndex) => {
+      // console.log(`key correct`, {matchWord, char, charIndex})
+      return isKeyCorrect(matchWord, char, charIndex) ? ++carry : carry
+    }, 0)
+  // if (key == 'b')
+  console.log({key,correctKeyCountInUserAttempt})
+  const keyLetterCountInWord = matchWordCharacters.filter(
+    (char) => char == key
+  ).length
+
+  const equalLettersToThisKeyIndex = matchWordCharacters.reduce(
+    (carry, char, charIndex) => {
+      // if (key == 'b') {
+      //   console.log({key, char, charIndex, keyIndex})
+      // }
+      if (charIndex <= keyIndex && char == key) carry += 1
+      return carry
+    },
+    0
+  )
+
+  if (key == 'b') {
+    console.log({ keyIndex, keyLetterCountInWord, equalLettersToThisKeyIndex })
+  }
+
+  const canHighlightKeyIndex =
+    equalLettersToThisKeyIndex <= keyLetterCountInWord &&
+    correctKeyCountInUserAttempt < keyLetterCountInWord
+
+  return canHighlightKeyIndex && isKeyPresentInWord
 }
 
 export const saveInvalidWordToDb = async (db, word) => {

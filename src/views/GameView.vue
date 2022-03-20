@@ -455,7 +455,7 @@ export default {
 
       return isKeyCorrect(this.match.word, key, colIndex)
         ? 'bg-success text-white'
-        : isKeyInWord(this.match.word, key)
+        : isKeyInWord(this.match.word, key, colIndex)
         ? 'bg-warning'
         : 'bg-danger text-white'
     },
