@@ -11,21 +11,9 @@
 
 <script>
 import DefaultNavbar from '@/components/layout/DefaultNavbar'
-import { useAuthStore } from './store/AuthStore'
-
 export default {
   components: {
     DefaultNavbar,
-  },
-
-  data() {
-    return {
-      authStore: useAuthStore(),
-    }
-  },
-
-  created() {
-    this.authStore.attachAuthStateChangeListener()
   },
 
   watch: {
@@ -73,12 +61,5 @@ nav {
 
 .card {
   border-radius: 1rem;
-}
-
-.vertical-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 90vh;
 }
 </style>
