@@ -18,7 +18,7 @@
           </router-link>
 
           <button
-            class="btn btn-primary btn-lg w-100"
+            class="btn btn-info btn-lg w-100"
             :disabled="isLoading.gameCreation"
             @click="play()"
           >
@@ -33,16 +33,8 @@
             <template v-else>JOGAR COM AMIGOS</template>
           </button>
 
-          <router-link
-            v-if="userData && userData.stats"
-            :to="{ name: 'stats' }"
-            class="btn btn-warning btn-lg w-100"
-          >
-            ESTATÍSTICAS
-          </router-link>
-
           <button
-            class="btn btn-secondary btn-lg w-100"
+            class="btn btn-warning btn-lg w-100"
             data-bs-toggle="modal"
             data-bs-target="#how-to-play-modal"
           >
@@ -60,9 +52,6 @@
 import { createMatch } from '@/services/match'
 import HowToPlayModal from '@/components/modals/HowToPlayModal'
 
-import { mapState } from 'pinia'
-import { useAuthStore } from '@/store/AuthStore'
-
 export default {
   name: 'HomeView',
 
@@ -76,10 +65,6 @@ export default {
         gameCreation: false,
       },
     }
-  },
-
-  computed: {
-    ...mapState(useAuthStore, ['userData']),
   },
 
   methods: {
