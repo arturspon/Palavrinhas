@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('authStore', {
       auth: getAuth(),
       user: null,
       userData: null,
+      localPlayerId: localStorage.getItem('hostId')
     }
   },
 
@@ -34,21 +35,18 @@ export const useAuthStore = defineStore('authStore', {
     attachAuthStateChangeListener() {
       onAuthStateChanged(this.auth, async (user) => {
         if (user) {
-          // User is signed in, see docs for a list of available properties
-          // https://firebase.google.com/docs/reference/js/firebase.User
-          // const uid = user.uid
-          console.log(user.uid)
           this.user = user
 
           const userDoc = await this.getUserFirebaseDoc(user.uid)
-          console.log(userDoc.exists())
+
           if (userDoc.exists()) {
+            localStorage.setItem('hostId', user.uid)
             this.userData = userDoc.data()
           } else {
             this.createFirebaseUserDoc(user)
           }
         } else {
-          // console.log('User is signed out')
+          localStorage.removeItem('hostId')
           this.user = null
           this.signInAnon()
         }

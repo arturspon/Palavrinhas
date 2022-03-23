@@ -4,7 +4,7 @@
   >
     <div class="container">
       <div
-        v-if="isLoading.match"
+        v-if="!user || isLoading.match"
         class="spinner-border text-white"
         style="width: 3rem; height: 3rem"
         role="status"
@@ -30,7 +30,10 @@
         </div>
       </div>
 
-      <div v-else-if="match && match.winner" class="vh-90 d-flex justify-content-center align-items-center">
+      <div
+        v-else-if="match && match.winner"
+        class="vh-90 d-flex justify-content-center align-items-center"
+      >
         <div
           class="alert"
           :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
@@ -99,7 +102,9 @@
                 ></span>
                 <span class="visually-hidden">Carregando...</span>
               </template>
-              <template v-else-if="isLocalPlayerWinner()">Jogar com o mesmo oponente</template>
+              <template v-else-if="isLocalPlayerWinner()"
+                >Jogar com o mesmo oponente</template
+              >
               <template v-else>Pedir revanche</template>
             </button>
 
@@ -115,7 +120,6 @@
             </a>
           </div>
         </div>
-
       </div>
 
       <div v-else>
@@ -171,7 +175,11 @@
             </div>
             <!-- <div class="d-md-none py-1"></div> -->
             <div class="enemyBoard">
-              <EnemyBoard class="h-100" :matchWord="match.word" :enemy="enemy" />
+              <EnemyBoard
+                class="h-100"
+                :matchWord="match.word"
+                :enemy="enemy"
+              />
             </div>
           </div>
 
@@ -187,6 +195,8 @@
 </template>
 
 <script>
+import { mapState } from 'pinia'
+import { useAuthStore } from '@/store/AuthStore'
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
 import {
@@ -195,6 +205,7 @@ import {
   isKeyCorrect,
   isKeyInWord,
   saveInvalidWordToDb,
+  updateUserStats,
 } from '@/services/match'
 import PlayerBoard from '@/components/boards/PlayerBoard'
 import EnemyBoard from '@/components/boards/EnemyBoard'
@@ -210,6 +221,10 @@ export default {
     GameKeyboard,
   },
 
+  computed: {
+    ...mapState(useAuthStore, ['user', 'localPlayerId']),
+  },
+
   data() {
     return {
       isLoading: {
@@ -219,7 +234,6 @@ export default {
       },
 
       isHost: true,
-      localPlayerId: null,
 
       matchId: null,
       matchDocRef: null,
@@ -259,29 +273,10 @@ export default {
 
   created() {
     this.matchId = this.$route.params.gameId
-    this.getLocalPlayerId()
     this.loadMatch()
   },
 
   methods: {
-    getLocalPlayerId() {
-      let localId = localStorage.getItem('hostId')
-
-      localId = localId && localId.trim() ? localId : this.uuidv4()
-
-      localStorage.setItem('hostId', localId)
-      this.localPlayerId = localId
-    },
-
-    uuidv4() {
-      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-        (
-          c ^
-          (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-        ).toString(16)
-      )
-    },
-
     getPlayerKey() {
       return this.isHost ? 'host' : 'enemy'
     },
@@ -311,9 +306,12 @@ export default {
         this.player.guesses.length == 0 ? 0 : this.player.guesses.length - 1
 
       this.validateCurrentPlayer()
-      this.confirmGuess()
-      this.attachDbListener()
-      this.setInitialDataToDb()
+      this.attachDbListener(this.match.winner)
+
+      if (!this.match.winner) {
+        this.confirmGuess()
+        this.setInitialDataToDb()
+      }
 
       this.isLoading.match = false
     },
@@ -550,7 +548,7 @@ export default {
       updateDoc(this.matchDocRef, dataToUpdate)
     },
 
-    attachDbListener() {
+    attachDbListener(isGameAlreadyFinished) {
       this.unsubscribeDbListener = onSnapshot(this.matchDocRef, (doc) => {
         const data = doc.data()
 
@@ -560,7 +558,16 @@ export default {
           )
         }
 
+        const canUpdateUserStats =
+          !isGameAlreadyFinished &&
+          this.match &&
+          this.match.winner != data.winner
+
         this.match = data
+
+        if (canUpdateUserStats) {
+          updateUserStats(this.$db, this.user.uid, this.isLocalPlayerWinner())
+        }
 
         if (data.rematchId && !this.isLoading.playAnotherMatchSameEnemy) {
           this.showRematchDialog()
@@ -585,7 +592,7 @@ export default {
         winner: winnerId,
       })
 
-      // TODO: salvar estatísticas do usuário
+      updateUserStats(this.$db, this.user.uid, isLocalPlayerWinner)
 
       this.match.winner = winnerId
     },
@@ -743,7 +750,8 @@ export default {
   height: 90vh;
 }
 
-.playerBoard, .enemyBoard {
+.playerBoard,
+.enemyBoard {
   flex: 1;
 }
 
@@ -773,7 +781,8 @@ export default {
     padding: 0rem 0.6em;
   }
 
-  .gameKeyboardContainer, .gameKeyboardContainer > .card {
+  .gameKeyboardContainer,
+  .gameKeyboardContainer > .card {
     width: 100%;
   }
 }

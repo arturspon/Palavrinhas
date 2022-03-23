@@ -34,7 +34,7 @@
           </button>
 
           <router-link
-            v-if="userData && userData.stats"
+            v-if="userData && userData.stats && userData.stats.matchesCount > 0"
             :to="{ name: 'stats' }"
             class="btn btn-warning btn-lg w-100"
           >
