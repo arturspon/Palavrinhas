@@ -4,7 +4,7 @@
   >
     <div class="container">
       <div
-        v-if="!user || isLoading.match"
+        v-if="!user || !user.uid || isLoading.match"
         class="spinner-border text-white"
         style="width: 3rem; height: 3rem"
         role="status"
