@@ -585,6 +585,8 @@ export default {
         winner: winnerId,
       })
 
+      // TODO: salvar estatísticas do usuário
+
       this.match.winner = winnerId
     },
 
