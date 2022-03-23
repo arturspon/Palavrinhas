@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from './store'
+import { createPinia, PiniaVuePlugin } from 'pinia'
 
 import VueSweetalert2 from 'vue-sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
@@ -30,8 +30,12 @@ Vue.prototype.$db = getFirestore()
 
 Vue.use(VueSweetalert2)
 
-new Vue({
+Vue.use(PiniaVuePlugin)
+const pinia = createPinia()
+
+const app = new Vue({
   router,
-  store,
+  pinia,
   render: (h) => h(App),
-}).$mount('#app')
+})
+app.$mount('#app')
