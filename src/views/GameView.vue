@@ -195,7 +195,7 @@
 </template>
 
 <script>
-import { mapState, mapStores } from 'pinia'
+import { mapState } from 'pinia'
 import { useAuthStore } from '@/store/AuthStore'
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
@@ -214,8 +214,6 @@ import GameKeyboard from '@/components/game/GameKeyboard'
 const saveToDbDebounceIntervalSeconds = 1
 const words = getAllPtBrWords()
 
-// const authStore = useAuthStore()
-
 export default {
   components: {
     PlayerBoard,
@@ -224,11 +222,7 @@ export default {
   },
 
   computed: {
-    ...mapState(useAuthStore, [
-      'user',
-      'userData',
-      'localPlayerId'
-    ]),
+    ...mapState(useAuthStore, ['user', 'userData', 'localPlayerId']),
   },
 
   data() {
@@ -239,6 +233,8 @@ export default {
         playAnotherMatchSameEnemy: false,
         userData: true,
       },
+
+      authStore: useAuthStore(),
 
       isHost: true,
 
@@ -586,6 +582,7 @@ export default {
 
         if (canUpdateUserStats) {
           updateUserStats(this.$db, this.user.uid, this.isLocalPlayerWinner())
+          this.updateUserStatsLocally()
         }
 
         if (data.rematchId && !this.isLoading.playAnotherMatchSameEnemy) {
@@ -612,6 +609,7 @@ export default {
       })
 
       updateUserStats(this.$db, this.user.uid, isLocalPlayerWinner)
+      this.updateUserStatsLocally()
 
       this.match.winner = winnerId
     },
@@ -713,6 +711,14 @@ export default {
       })
 
       this.isRematchDialogVisible = true
+    },
+
+    updateUserStatsLocally() {
+      this.isLocalPlayerWinner()
+        ? this.authStore.userData.stats.winsCount++ &&
+          this.authStore.userData.stats.matchesCount++
+        : this.authStore.userData.stats.lossesCount++ &&
+          this.authStore.userData.stats.matchesCount++
     },
   },
 }
