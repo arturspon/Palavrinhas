@@ -47,7 +47,6 @@ export const useAuthStore = defineStore('authStore', {
             this.createFirebaseUserDoc(user)
           }
         } else {
-          localStorage.removeItem('hostId')
           this.user = null
           this.signInAnon()
         }

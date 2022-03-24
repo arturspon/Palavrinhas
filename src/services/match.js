@@ -100,10 +100,8 @@ export const rematch = async (db, matchDocRef, matchData) => {
       )
     }
 
-    console.log('Transaction successfully committed!')
     return newMatchDocRef.rematchDocRef
   } catch (e) {
-    console.log('Transaction failed: ', e)
     return null
   }
 }
@@ -124,7 +122,6 @@ export const saveInvalidWordToDb = async (db, word) => {
 }
 
 export const updateUserStats = async (db, userId, isWinner) => {
-  console.log({userId, isWinner})
   const payload = {
     'stats.matchesCount': increment(1),
   }
@@ -132,8 +129,6 @@ export const updateUserStats = async (db, userId, isWinner) => {
   isWinner
     ? payload['stats.winsCount'] = increment(1)
     : payload['stats.lossesCount'] = increment(1)
-
-  console.log({payload})
 
   const userDocRef = doc(db, 'users', userId)
   await updateDoc(userDocRef, payload)

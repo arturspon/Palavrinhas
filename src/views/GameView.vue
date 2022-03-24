@@ -4,7 +4,7 @@
   >
     <div class="container">
       <div
-        v-if="!user || isLoading.match"
+        v-if="!userData || isLoading.match"
         class="spinner-border text-white"
         style="width: 3rem; height: 3rem"
         role="status"
@@ -195,7 +195,7 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
+import { mapState, mapStores } from 'pinia'
 import { useAuthStore } from '@/store/AuthStore'
 import { doc, getDoc, updateDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { getAllPtBrWords } from '@/utils/words'
@@ -214,6 +214,8 @@ import GameKeyboard from '@/components/game/GameKeyboard'
 const saveToDbDebounceIntervalSeconds = 1
 const words = getAllPtBrWords()
 
+// const authStore = useAuthStore()
+
 export default {
   components: {
     PlayerBoard,
@@ -222,7 +224,11 @@ export default {
   },
 
   computed: {
-    ...mapState(useAuthStore, ['user', 'localPlayerId']),
+    ...mapState(useAuthStore, [
+      'user',
+      'userData',
+      'localPlayerId'
+    ]),
   },
 
   data() {
@@ -231,6 +237,7 @@ export default {
         match: true,
         playAnotherMatchAnotherEnemy: false,
         playAnotherMatchSameEnemy: false,
+        userData: true,
       },
 
       isHost: true,
@@ -271,9 +278,21 @@ export default {
     }
   },
 
+  watch: {
+    userData: function (val) {
+      if (val && this.isLoading.userData) {
+        this.isLoading.userData = false
+        this.loadMatch()
+      }
+    },
+  },
+
   created() {
     this.matchId = this.$route.params.gameId
-    this.loadMatch()
+
+    if (this.userData) {
+      this.loadMatch()
+    }
   },
 
   methods: {
