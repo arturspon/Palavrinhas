@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import GameView from '../views/GameView.vue'
 import SingleplayerGameView from '../views/SingleplayerGameView.vue'
 import PrivacyPolicyView from '../views/PrivacyPolicyView.vue'
+import UserStatsView from '../views/UserStatsView.vue'
 
 Vue.use(VueRouter)
 
@@ -35,6 +36,11 @@ const routes = [
     path: '/privacy',
     name: 'privacy',
     component: PrivacyPolicyView
+  },
+  {
+    path: '/stats',
+    name: 'stats',
+    component: UserStatsView
   },
 ]
 

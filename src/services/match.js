@@ -1,34 +1,16 @@
 import {
   collection,
   addDoc,
-  setDoc,
   Timestamp,
   arrayUnion,
   updateDoc,
   doc,
   runTransaction,
+  increment
 } from 'firebase/firestore'
 import { getRandomWord } from '@/utils/words'
 
-const uuidv4 = () => {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (
-      c ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-    ).toString(16)
-  )
-}
-
-const getPlayerLocalId = () => {
-  let hostId = localStorage.getItem('hostId')
-
-  if (!hostId) {
-    hostId = uuidv4()
-    localStorage.setItem('hostId', hostId)
-  }
-
-  return hostId
-}
+const getPlayerLocalId = () => localStorage.getItem('hostId')
 
 const getCleanMatchModel = () => {
   return {
@@ -108,7 +90,7 @@ export const rematch = async (db, matchDocRef, matchData) => {
         isCurrentPlayerOwnerOfRematch: true,
         rematchDocRef: newMatchDocRef,
       }
-    });
+    })
 
     if (!newMatchDocRef.isCurrentPlayerOwnerOfRematch) {
       await updateDoc(
@@ -118,10 +100,8 @@ export const rematch = async (db, matchDocRef, matchData) => {
       )
     }
 
-    console.log("Transaction successfully committed!");
     return newMatchDocRef.rematchDocRef
   } catch (e) {
-    console.log("Transaction failed: ", e);
     return null
   }
 }
@@ -139,4 +119,17 @@ export const saveInvalidWordToDb = async (db, word) => {
   await updateDoc(invalidWordsDocRef, {
     data: arrayUnion(word),
   })
+}
+
+export const updateUserStats = async (db, userId, isWinner) => {
+  const payload = {
+    'stats.matchesCount': increment(1),
+  }
+
+  isWinner
+    ? payload['stats.winsCount'] = increment(1)
+    : payload['stats.lossesCount'] = increment(1)
+
+  const userDocRef = doc(db, 'users', userId)
+  await updateDoc(userDocRef, payload)
 }
