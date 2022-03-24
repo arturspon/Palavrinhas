@@ -38,8 +38,8 @@
           class="alert"
           :class="[isLocalPlayerWinner() ? 'alert-success' : 'alert-danger']"
         >
-          <p>
-            <b class="fs-5">
+          <p class="mb-1">
+            <b class="fs-6">
               {{
                 isLocalPlayerWinner()
                   ? '😎 Parabéns, você ganhou!'
@@ -49,66 +49,58 @@
             <br />
             <span>A palavra era: {{ match.word.toUpperCase() }}</span>
           </p>
-          <p v-if="!isLocalPlayerWinner()">
-            Lembre-se, sempre há a próxima partida 😉
-          </p>
 
-          <div class="d-flex justify-content-center flex-wrap gap-3">
+          <div class="d-flex justify-content-center flex-wrap gap-2">
             <div>
-              <span>Seu resultado:</span>
+              <small><b>Seu resultado</b></small>
               <div v-html="getGameResultEmojis('<br>')"></div>
             </div>
             <div>
-              <span>Resultado do oponente:</span>
+              <small><b>Oponente</b></small>
               <div v-html="getGameResultEmojis('<br>', true)"></div>
             </div>
           </div>
 
           <div class="mt-3">
-            <button
-              class="btn btn-primary"
-              @click="playAnotherMatch(false)"
-              :disabled="
-                isLoading.playAnotherMatchAnotherEnemy ||
-                isLoading.playAnotherMatchSameEnemy
-              "
-            >
-              <template v-if="isLoading.playAnotherMatchAnotherEnemy">
-                <span
-                  class="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                <span class="visually-hidden">Carregando...</span>
-              </template>
-              <template v-else>Jogar com outro oponente</template>
-            </button>
 
-            <br />
-
-            <button
-              class="btn btn-warning mt-1"
-              @click="playAnotherMatch(true)"
-              :disabled="
-                isLoading.playAnotherMatchSameEnemy ||
-                isLoading.playAnotherMatchAnotherEnemy
-              "
-            >
-              <template v-if="isLoading.playAnotherMatchSameEnemy">
-                <span
-                  class="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                <span class="visually-hidden">Carregando...</span>
-              </template>
-              <template v-else-if="isLocalPlayerWinner()"
-                >Jogar com o mesmo oponente</template
+            <div class="d-flex justify-content-center gap-1">
+              <button
+                class="btn btn-primary btn-sm"
+                @click="playAnotherMatch(false)"
+                :disabled="
+                  isLoading.playAnotherMatchAnotherEnemy ||
+                  isLoading.playAnotherMatchSameEnemy
+                "
               >
-              <template v-else>Pedir revanche</template>
-            </button>
-
-            <br />
+                <template v-if="isLoading.playAnotherMatchAnotherEnemy">
+                  <span
+                    class="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="visually-hidden">Carregando...</span>
+                </template>
+                <template v-else>Jogar com outro oponente</template>
+              </button>
+              <button
+                class="btn btn-warning btn-sm"
+                @click="playAnotherMatch(true)"
+                :disabled="
+                  isLoading.playAnotherMatchSameEnemy ||
+                  isLoading.playAnotherMatchAnotherEnemy
+                "
+              >
+                <template v-if="isLoading.playAnotherMatchSameEnemy">
+                  <span
+                    class="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="visually-hidden">Carregando...</span>
+                </template>
+                Pedir revanche
+              </button>
+            </div>
 
             <a
               :href="buildWhatsAppUrl(shareGameResult())"
