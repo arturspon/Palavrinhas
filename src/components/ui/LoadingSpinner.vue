@@ -13,7 +13,11 @@
 <script>
 export default {
   props: {
-    isLoading: Boolean,
+    isLoading: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
     colorClass: {
       type: String,
       required: false,

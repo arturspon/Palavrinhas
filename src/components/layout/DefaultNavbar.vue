@@ -2,6 +2,7 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-md">
       <router-link
+        v-if="$route.name != 'home'"
         class="btn btn-secondary btn-sm"
         :to="{ name: 'home' }"
       >
@@ -21,12 +22,5 @@
 <style scoped>
 .navbar {
   background-color: #eeeeee;
-}
-
-@media (max-width: 700px) {
-  .navbar > .container-md {
-    padding-left: 0;
-    padding-right: 0;
-  }
 }
 </style>

@@ -1,32 +1,31 @@
 <template>
   <div
-    class="gameViewRoot d-flex align-items-center justify-content-center py-2"
+    class="gameViewRoot d-flex align-items-center justify-content-center py-2 w-100"
   >
     <div class="container">
-      <div
-        v-if="!userData || isLoading.match"
-        class="spinner-border text-white"
-        style="width: 3rem; height: 3rem"
-        role="status"
-      >
-        <span class="visually-hidden">Carregando...</span>
+      <div v-if="!userData || isLoading.match" class="vertical-center">
+        <LoadingSpinner colorClass="text-white" class="vertical-center" />
       </div>
 
-      <div v-else-if="error" class="alert alert-warning">
-        {{ error }}
-        <div class="mt-2">
-          <router-link :to="{ name: 'home' }" class="btn btn-primary">
-            Ir para página inicial
-          </router-link>
+      <div v-else-if="error" class="vertical-center">
+        <div class="alert alert-warning">
+          {{ error }}
+          <div class="mt-2">
+            <router-link :to="{ name: 'home' }" class="btn btn-primary">
+              Ir para página inicial
+            </router-link>
+          </div>
         </div>
       </div>
 
-      <div v-else-if="isMatchFull" class="alert alert-warning">
-        <p>Oops... Essa partida já está cheia!</p>
-        <div class="mt-2">
-          <router-link :to="{ name: 'home' }" class="btn btn-primary">
-            Iniciar nova partida
-          </router-link>
+      <div v-else-if="isMatchFull" class="vertical-center">
+        <div class="alert alert-warning">
+          <p>Oops... Essa partida já está cheia!</p>
+          <div class="mt-2">
+            <router-link :to="{ name: 'home' }" class="btn btn-primary">
+              Iniciar nova partida
+            </router-link>
+          </div>
         </div>
       </div>
 
@@ -62,7 +61,6 @@
           </div>
 
           <div class="mt-3">
-
             <div class="d-flex justify-content-center gap-1">
               <button
                 class="btn btn-primary btn-sm"
@@ -98,9 +96,7 @@
                   ></span>
                   <span class="visually-hidden">Carregando...</span>
                 </template>
-                <template v-else>
-                  Pedir revanche
-                </template>
+                <template v-else> Pedir revanche </template>
               </button>
             </div>
 
@@ -204,6 +200,7 @@ import {
 import PlayerBoard from '@/components/boards/PlayerBoard.vue'
 import EnemyBoard from '@/components/boards/EnemyBoard.vue'
 import GameKeyboard from '@/components/game/GameKeyboard.vue'
+import LoadingSpinner from '../components/ui/LoadingSpinner.vue'
 
 const saveToDbDebounceIntervalSeconds = 1
 const words = getAllPtBrWords()
@@ -213,6 +210,7 @@ export default {
     PlayerBoard,
     EnemyBoard,
     GameKeyboard,
+    LoadingSpinner,
   },
 
   computed: {
@@ -660,15 +658,14 @@ export default {
       this.isLoading.playAnotherMatchAnotherEnemy = !withSameEnemy
       this.isLoading.playAnotherMatchSameEnemy = withSameEnemy
 
-
       const docRef = withSameEnemy
         ? await rematch(this.$db, this.matchDocRef.id, this.match)
         : await createMatch(this.$db)
 
       this.$router.replace({
-        name: 'game',
+        name: 'mathRedirect',
         params: {
-          gameId: docRef.id,
+          newMatchId: docRef.id,
         },
       })
     },
@@ -695,9 +692,9 @@ export default {
           )
 
           this.$router.replace({
-            name: 'game',
+            name: 'mathRedirect',
             params: {
-              gameId: this.match.rematchId,
+              newMatchId: this.match.rematchId,
             },
           })
         }

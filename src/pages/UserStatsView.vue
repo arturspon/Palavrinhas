@@ -1,5 +1,5 @@
 <template>
-  <div class="vertical-center">
+  <div class="page vertical-center">
     <div class="container">
       <div class="card">
         <div class="card-body text-center">
