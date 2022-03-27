@@ -1,5 +1,5 @@
 <template>
-  <div class="home vh-100 d-flex align-items-center justify-content-center">
+  <div class="page home vh-100 d-flex align-items-center justify-content-center">
     <div class="card">
       <div class="card-body p-5">
         <img

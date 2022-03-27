@@ -33,13 +33,16 @@ export default {
 </script>
 
 <template>
-  <div id="app">
-    <div v-if="$route.name != 'home'">
-      <DefaultNavbar />
-    </div>
-    <div :class="$route.name != 'home' ? 'mt-5 pt-2' : ''">
-      <router-view :key="$route.fullPath" />
-    </div>
+  <DefaultNavbar />
+  <div class="content" :class="$route.name != 'home' ? 'mt-5 pt-2' : ''">
+    <router-view v-slot="{ Component, route }">
+      <transition
+        :enter-active-class="route.meta.enterClass"
+        :leave-active-class="route.meta.leaveClass"
+      >
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </div>
 </template>
 
@@ -69,5 +72,26 @@ body {
   align-items: center;
   justify-content: center;
   height: 90vh;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+}
+
+.page {
+  position: absolute;
+  top: 30px;
+  width: 100%;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease-out;
 }
 </style>
