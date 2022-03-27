@@ -1,16 +1,5 @@
-<template>
-  <div id="app">
-    <div v-if="$route.name != 'home'">
-      <DefaultNavbar />
-    </div>
-    <div :class="$route.name != 'home' ? 'mt-5 pt-2' : ''">
-      <router-view />
-    </div>
-  </div>
-</template>
-
 <script>
-import DefaultNavbar from '@/components/layout/DefaultNavbar'
+import DefaultNavbar from '@/components/layout/DefaultNavbar.vue'
 import { useAuthStore } from './store/AuthStore'
 
 export default {
@@ -31,17 +20,30 @@ export default {
   watch: {
     $route(to, from) {
       if (window?.ReactNativeWebView?.postMessage) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-          type: 'routeUpdate',
-          data: to.name,
-        }))
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'routeUpdate',
+            data: to.name,
+          })
+        )
       }
     },
   },
 }
 </script>
 
-<style lang="scss">
+<template>
+  <div id="app">
+    <div v-if="$route.name != 'home'">
+      <DefaultNavbar />
+    </div>
+    <div :class="$route.name != 'home' ? 'mt-5 pt-2' : ''">
+      <router-view :key="$route.fullPath" />
+    </div>
+  </div>
+</template>
+
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka&display=swap');
 
 #app {
@@ -56,19 +58,6 @@ body {
   background-image: url('~@/assets/images/bgtile3.png');
   background-repeat: repeat;
   background-size: 8rem;
-}
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
 }
 
 .card {

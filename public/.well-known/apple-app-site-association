@@ -5,6 +5,10 @@
           {
               "appID": "com.palavrinhasapp",
               "paths": ["*"]
+          },
+          {
+              "appID": "936FP59GZ7.com.palavrinhasapp",
+              "paths": ["*"]
           }
       ]
   }

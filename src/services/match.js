@@ -47,9 +47,9 @@ export const createMatch = async (db, dataOverride) => {
   return docRef
 }
 
-export const rematch = async (db, matchDocRef, matchData) => {
+export const rematch = async (db, matchDocId, matchData) => {
+  const matchDocRef = doc(db, 'matches', matchDocId)
   try {
-    console.log('pedindo rematch')
     const newMatchDocRef = await runTransaction(db, async (transaction) => {
       const currentMatchDoc = await transaction.get(matchDocRef)
       const currentMatchData = currentMatchDoc.data()
@@ -102,6 +102,7 @@ export const rematch = async (db, matchDocRef, matchData) => {
 
     return newMatchDocRef.rematchDocRef
   } catch (e) {
+    console.log(e)
     return null
   }
 }

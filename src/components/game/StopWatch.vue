@@ -9,7 +9,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { saveStopwatchData, getStopwatchData } from '@/utils/SinglePlayerUtils'
 
 export default {
@@ -25,7 +25,7 @@ export default {
     this.startTimer()
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.clearTimer()
   },
 
