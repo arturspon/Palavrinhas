@@ -79,9 +79,9 @@
 import { getAllPtBrWords } from '@/utils/words'
 import { getRandomWord } from '@/utils/words'
 import { isKeyCorrect, isKeyInWord } from '@/services/match'
-import SinglePlayerBoard from '@/components/boards/SinglePlayerBoard'
-import GameKeyboard from '@/components/game/GameKeyboard'
-import StopWatch from '@/components/game/StopWatch'
+import SinglePlayerBoard from '@/components/boards/SinglePlayerBoard.vue'
+import GameKeyboard from '@/components/game/GameKeyboard.vue'
+import StopWatch from '@/components/game/StopWatch.vue'
 import {
   getGameResultEmojis,
   getUrlGameResultWhatsApp,
@@ -291,7 +291,7 @@ export default {
             : isKeyInWord(this.word, key)
             ? 'halfRight'
             : 'wrong'
-          this.$set(this.keyStatuses, key, statusText)
+          this.keyStatuses[key] = statusText
         }
       }
     },

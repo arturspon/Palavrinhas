@@ -98,7 +98,9 @@
                   ></span>
                   <span class="visually-hidden">Carregando...</span>
                 </template>
-                Pedir revanche
+                <template v-else>
+                  Pedir revanche
+                </template>
               </button>
             </div>
 
@@ -199,9 +201,9 @@ import {
   saveInvalidWordToDb,
   updateUserStats,
 } from '@/services/match'
-import PlayerBoard from '@/components/boards/PlayerBoard'
-import EnemyBoard from '@/components/boards/EnemyBoard'
-import GameKeyboard from '@/components/game/GameKeyboard'
+import PlayerBoard from '@/components/boards/PlayerBoard.vue'
+import EnemyBoard from '@/components/boards/EnemyBoard.vue'
+import GameKeyboard from '@/components/game/GameKeyboard.vue'
 
 const saveToDbDebounceIntervalSeconds = 1
 const words = getAllPtBrWords()
@@ -502,7 +504,7 @@ export default {
             : isKeyInWord(this.match.word, key)
             ? 'halfRight'
             : 'wrong'
-          this.$set(this.keyStatuses, key, statusText)
+          this.keyStatuses[key] = statusText
         }
       }
     },
@@ -658,8 +660,9 @@ export default {
       this.isLoading.playAnotherMatchAnotherEnemy = !withSameEnemy
       this.isLoading.playAnotherMatchSameEnemy = withSameEnemy
 
+
       const docRef = withSameEnemy
-        ? await rematch(this.$db, this.matchDocRef, this.match)
+        ? await rematch(this.$db, this.matchDocRef.id, this.match)
         : await createMatch(this.$db)
 
       this.$router.replace({
@@ -668,7 +671,6 @@ export default {
           gameId: docRef.id,
         },
       })
-      this.$router.go()
     },
 
     showRematchDialog() {
@@ -698,7 +700,6 @@ export default {
               gameId: this.match.rematchId,
             },
           })
-          this.$router.go()
         }
       })
 

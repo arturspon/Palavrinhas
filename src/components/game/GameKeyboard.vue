@@ -1,7 +1,6 @@
 <template>
   <div class="card">
     <div class="card-body">
-
       <div class="d-flex justify-content-center gap-2 mb-2">
         <button
           class="btn btn-outline-danger btn-sm"
@@ -68,30 +67,36 @@ export default {
     keyStatuses: {
       handler() {
         this.$forceUpdate()
-      }
-    }
+      },
+    },
   },
 
   created() {
     this.attachKeyboardListener()
   },
 
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.keyListenerCallback)
+  },
+
   methods: {
     attachKeyboardListener() {
+      document.addEventListener('keydown', this.keyListenerCallback)
+    },
+
+    keyListenerCallback(event) {
       const specialKeys = ['backspace', 'enter']
       const validLetterKeys = this.keyboard.reduce(
         (carry, keyboardRow) => [...carry, ...keyboardRow],
         specialKeys
       )
 
-      document.addEventListener('keydown', (event) => {
-        const pressedKey = this.getCleanKey(event.key)
-        const isValidKey = validLetterKeys.includes(pressedKey)
+      const pressedKey = this.getCleanKey(event.key)
+      const isValidKey = validLetterKeys.includes(pressedKey)
 
-        if (isValidKey) {
-          this.$emit('keyPress', pressedKey)
-        }
-      })
+      if (isValidKey) {
+        this.$emit('keyPress', pressedKey)
+      }
     },
 
     getCleanKey(key) {

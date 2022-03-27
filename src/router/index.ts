@@ -1,12 +1,8 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import GameView from '../views/GameView.vue'
-import SingleplayerGameView from '../views/SingleplayerGameView.vue'
-import PrivacyPolicyView from '../views/PrivacyPolicyView.vue'
-import UserStatsView from '../views/UserStatsView.vue'
-
-Vue.use(VueRouter)
+import HomeView from '../pages/HomeView.vue'
+import GameView from '../pages/GameView.vue'
+import SingleplayerGameView from '../pages/SingleplayerGameView.vue'
+import PrivacyPolicyView from '../pages/PrivacyPolicyView.vue'
+import UserStatsView from '../pages/UserStatsView.vue'
 
 const routes = [
   {
@@ -20,7 +16,7 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../pages/AboutView.vue')
   },
   {
     path: '/game/:gameId',
@@ -44,10 +40,4 @@ const routes = [
   },
 ]
 
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes
-})
-
-export default router
+export default routes

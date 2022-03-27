@@ -3,13 +3,13 @@
     <div class="card">
       <div class="card-body p-5">
         <img
-          src="assets/favicons/android-chrome-192x192.png"
+          src="@/assets/images/logo-192x192.png"
           alt="Logo do Palavrinhas.com"
           height="100"
         />
         <h1>Palavrinhas</h1>
 
-        <div class="mt-5 d-flex flex-column gap-2">
+        <div class="mt-3 d-flex flex-column gap-2">
           <router-link
             :to="{ name: 'sp-game' }"
             class="btn btn-primary btn-lg w-100"
@@ -58,7 +58,7 @@
 
 <script>
 import { createMatch } from '@/services/match'
-import HowToPlayModal from '@/components/modals/HowToPlayModal'
+import HowToPlayModal from '@/components/modals/HowToPlayModal.vue'
 
 import { mapState } from 'pinia'
 import { useAuthStore } from '@/store/AuthStore'
