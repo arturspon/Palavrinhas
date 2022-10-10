@@ -9,7 +9,7 @@
         />
         <h1>Palavrinhas</h1>
 
-        <div class="mt-3 d-flex flex-column gap-2">
+        <div class="mt-3 d-flex flex-column gap-1">
           <router-link
             :to="{ name: 'sp-game' }"
             class="btn btn-primary btn-lg w-100"
@@ -48,6 +48,16 @@
           >
             REGRAS
           </button>
+
+          <a
+            href="https://play.google.com/store/apps/details?id=com.palavrinhasapp&utm_source=website&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"
+          >
+            <img
+              alt="Disponível no Google Play"
+              src="https://play.google.com/intl/en_us/badges/static/images/badges/pt-br_badge_web_generic.png"
+              height="64"
+            />
+          </a>
         </div>
       </div>
     </div>
