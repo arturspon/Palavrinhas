@@ -13,6 +13,7 @@ import 'sweetalert2/dist/sweetalert2.min.css'
 
 import '@/assets/css/bootstrap.min.css'
 import '@/assets/js/bootstrap.bundle.min.js'
+import '@/assets/css/custom.css'
 import 'animate.css'
 
 import ScriptX from 'vue-scriptx'
