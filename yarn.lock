@@ -1731,22 +1731,12 @@ vue-demi@*:
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.12.4.tgz#420dd17628f95f1bbce1102ad3c51074713a8049"
   integrity sha512-ztPDkFt0TSUdoq1ZI6oD730vgztBkiByhUW7L1cOTebiSBqSYfSQgnhYakYigBkyAybqCTH7h44yZuDJf2xILQ==
 
-vue-google-adsense@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/vue-google-adsense/-/vue-google-adsense-2.0.0.tgz#7a8007336cf1471923da8372ae986fbe84c10cc2"
-  integrity sha512-/Lds405KZEufu8VKjmxubu22qRQsr073MKmZuefC9ABs3ArvTZCWfqFMyG2xNjeFOHHr4vrngXUrNhuT8Zi9lw==
-
 vue-router@^4.0.14:
   version "4.0.14"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-4.0.14.tgz#ce2028c1c5c33e30c7287950c973f397fce1bd65"
   integrity sha512-wAO6zF9zxA3u+7AkMPqw9LjoUCjSxfFvINQj3E/DceTt6uEz1XZLraDhdg2EYmvVwTBSGlLYsUw8bDmx0754Mw==
   dependencies:
     "@vue/devtools-api" "^6.0.0"
-
-vue-scriptx@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/vue-scriptx/-/vue-scriptx-0.2.5.tgz#521cb3e060a85f5cb3b58cbc50945de054b24093"
-  integrity sha512-jnZr6ZLyuT23xt6t6a6bimQf8nrOVxjZVQZ5V4vF/c0phXa3kHbi/F3LwMJAoblTKlXpfq+RlQDg40hfZG1hlw==
 
 vue-sweetalert2@^5.0.2:
   version "5.0.2"

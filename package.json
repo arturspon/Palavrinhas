@@ -12,9 +12,7 @@
     "firebase": "^9.6.10",
     "pinia": "^2.0.12",
     "vue": "^3.2.25",
-    "vue-google-adsense": "^2.0.0",
     "vue-router": "^4.0.14",
-    "vue-scriptx": "^0.2.5",
     "vue-sweetalert2": "^5.0.2"
   },
   "devDependencies": {

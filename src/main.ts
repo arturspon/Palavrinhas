@@ -16,9 +16,6 @@ import '@/assets/js/bootstrap.bundle.min.js'
 import '@/assets/css/custom.css'
 import 'animate.css'
 
-import ScriptX from 'vue-scriptx'
-import Ads from 'vue-google-adsense'
-
 const firebaseConfig = {
   apiKey: 'AIzaSyB73Yi9YXhAd1xdtgqXsIuQNtLsWF2jCNo',
   authDomain: 'palavreando-ac44f.firebaseapp.com',
@@ -44,8 +41,5 @@ app.config.globalProperties.$db = getFirestore()
 app.use(createPinia())
 app.use(router)
 app.use(VueSweetalert2)
-
-app.use(ScriptX)
-app.use(Ads.AutoAdsense, { adClient: 'ca-pub-9517344625390117', isNewAdsCode: true })
 
 app.mount('#app')
