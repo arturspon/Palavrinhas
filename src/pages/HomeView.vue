@@ -1,5 +1,5 @@
 <template>
-  <div class="page home vh-100 d-flex align-items-center justify-content-center">
+  <div class="page home d-flex align-items-center justify-content-center">
     <div class="card">
       <div class="card-body p-5">
         <img
@@ -100,7 +100,11 @@ export default {
 </script>
 
 <style scoped>
-  .home > .card {
-    min-width: 25%;
-  }
+.home {
+  height: calc(100vh - 56px);
+}
+
+.home > .card {
+  min-width: 25%;
+}
 </style>
